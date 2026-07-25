@@ -267,17 +267,49 @@ if (cursorDot && window.matchMedia('(hover: hover)').matches) {
   });
 
   (function loopDot() {
-    cx += (tx - cx) * 0.16;
-    cy += (ty - cy) * 0.16;
+    cx += (tx - cx) * 0.45;   // high follow factor - the dot keeps up with the cursor
+    cy += (ty - cy) * 0.45;
     cursorDot.style.transform = `translate3d(${cx}px, ${cy}px, 0) translate(-50%, -50%)`;
     requestAnimationFrame(loopDot);
   })();
 }
 
 
-/* ---------- ACTIVE NAV HIGHLIGHT ---------- */
+/* ---------- ACTIVE NAV + MAGNETIC PILL ----------
+   One lozenge glides between nav items instead of each link carrying its
+   own underline. It stretches slightly in the direction of travel, so a
+   long jump reads as momentum rather than a teleport. */
 const sections  = document.querySelectorAll('section[id]');
 const navLinks  = document.querySelectorAll('nav a');
+const navEl     = document.querySelector('nav');
+const navPill   = document.getElementById('nav-pill');
+
+function activeLink() {
+  return document.querySelector('nav a.active') || navLinks[0];
+}
+
+function movePill(link) {
+  if (!navPill || !navEl || !link) return;
+  const nav = navEl.getBoundingClientRect();
+  const box = link.getBoundingClientRect();
+  if (!box.width) return;
+
+  const x    = box.left - nav.left;
+  const prev = parseFloat(navPill.style.getPropertyValue('--pill-x')) || 0;
+  const trip = Math.abs(x - prev);
+
+  navPill.style.width = box.width + 'px';
+  navPill.style.top   = (box.top - nav.top + box.height / 2) + 'px';
+  navPill.style.setProperty('--pill-x', x + 'px');
+
+  // Stretch along the direction of travel, then settle back.
+  if (!REDUCED && trip > 8) {
+    navPill.style.setProperty('--pill-squash', Math.min(1 + trip / 900, 1.14));
+    clearTimeout(navPill._settle);
+    navPill._settle = setTimeout(() => navPill.style.setProperty('--pill-squash', 1), 200);
+  }
+  navPill.classList.add('ready');
+}
 
 function updateNav() {
   const scrollY = window.scrollY + 180;
@@ -289,10 +321,21 @@ function updateNav() {
       });
     }
   });
+  if (!navEl || !navEl.matches(':hover')) movePill(activeLink());
 }
 
+// Follow the cursor across the nav, then snap back to the current section.
+navLinks.forEach(link => link.addEventListener('mouseenter', () => movePill(link)));
+if (navEl) navEl.addEventListener('mouseleave', () => movePill(activeLink()));
+
 window.addEventListener('scroll', updateNav, { passive: true });
+window.addEventListener('resize', () => movePill(activeLink()));
 document.addEventListener('DOMContentLoaded', updateNav);
+// Nav widths shift once the webfont swaps in - re-measure when it lands.
+if (document.fonts && document.fonts.ready) {
+  document.fonts.ready.then(() => movePill(activeLink()));
+}
+updateNav();
 
 
 /* ---------- SMOOTH SCROLL ---------- */
@@ -303,6 +346,7 @@ navLinks.forEach(link => {
     e.preventDefault();
     const target = document.querySelector(href);
     if (target) target.scrollIntoView({ behavior: 'smooth' });
+    movePill(link);
   });
 });
 
@@ -379,20 +423,19 @@ const timelineObs = new IntersectionObserver(entries => {
 document.querySelectorAll('.timeline').forEach(el => timelineObs.observe(el));
 
 
-/* ---------- SCROLL PROGRESS + HERO PARALLAX ---------- */
-const progressBar = document.getElementById('scroll-progress-bar');
-const heroInner   = document.getElementById('hero-inner');
-const headerEl    = document.getElementById('site-header');
+/* ---------- SCROLL: HERO PARALLAX + GRID DEPTH DRIFT ---------- */
+const heroInner = document.getElementById('hero-inner');
+const headerEl  = document.getElementById('site-header');
+const dotGrid   = document.querySelector('.dot-grid');
 
 let scrollTicking = false;
 function onScrollFrame() {
   scrollTicking = false;
   const y = window.scrollY;
 
-  if (progressBar) {
-    const max = document.documentElement.scrollHeight - window.innerHeight;
-    progressBar.style.width = (max > 0 ? Math.min(y / max, 1) * 100 : 0) + '%';
-  }
+  // The two dot layers drift at different rates, so the sparse near layer
+  // outruns the dense far one and the backdrop reads as having depth.
+  if (dotGrid && !REDUCED) dotGrid.style.setProperty('--dg', y.toFixed(1));
 
   if (heroInner && !REDUCED) {
     const vh = window.innerHeight || 1;
