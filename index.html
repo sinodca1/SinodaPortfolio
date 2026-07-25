@@ -3,13 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Yabetse Tesfaye Alemu | Full-Stack & Systems Engineer</title>
+  <title>Sinoda Tesfay | Full-Stack &amp; Systems Engineer</title>
+  <meta name="description" content="Sinoda Gebrehiwot Tesfay - full-stack and systems engineer building intelligent software across AI, infrastructure, and product." />
 
   <!-- Favicon (single SVG that adapts to system light/dark) -->
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <meta name="theme-color" content="#09090b" />
 
-  <!-- Fonts: Arvo (site) + Dancing Script (signature logo) -->
+  <!-- Fonts: Arvo (site) + Dancing Script (signature logo fallback) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Arvo:ital,wght@0,400;0,700;1,400;1,700&family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
@@ -23,6 +24,62 @@
 </head>
 
 <body>
+
+  <!-- Paint the saved theme + arm the loader before anything renders (no flash) -->
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('theme');
+        var dark  = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if ((saved || (dark ? 'dark' : 'light')) === 'light') document.body.classList.add('light-theme');
+      } catch (e) { /* storage blocked - fall through to dark */ }
+      document.body.classList.add('preloading');
+    })();
+  </script>
+
+  <!-- ===================== LOADING SCREEN ===================== -->
+  <div class="preloader" id="preloader" role="status" aria-live="polite" aria-label="Loading portfolio">
+
+    <div class="pre-field" aria-hidden="true">
+      <span class="pre-tag" style="--tx:-34rem; --ty:-12rem; --d:.10s">Python</span>
+      <span class="pre-tag" style="--tx:-26rem; --ty:  3rem; --d:.22s">Rust</span>
+      <span class="pre-tag" style="--tx:-15rem; --ty:-19rem; --d:.34s">FastAPI</span>
+      <span class="pre-tag" style="--tx: 15rem; --ty:-19rem; --d:.16s">TensorFlow</span>
+      <span class="pre-tag" style="--tx: 27rem; --ty: -6rem; --d:.28s">Docker</span>
+      <span class="pre-tag" style="--tx: 33rem; --ty:  8rem; --d:.40s">Kubernetes</span>
+      <span class="pre-tag" style="--tx:-31rem; --ty: 14rem; --d:.46s">React</span>
+      <span class="pre-tag" style="--tx: 31rem; --ty: 21rem; --d:.52s">RISC-V</span>
+    </div>
+
+    <div class="pre-core">
+      <div class="pre-mark">
+        <svg class="pre-ring" viewBox="0 0 132 132" aria-hidden="true">
+          <circle class="pre-ring-track" cx="66" cy="66" r="58" />
+          <circle class="pre-ring-arc"   cx="66" cy="66" r="58" id="pre-arc" />
+        </svg>
+        <div class="pre-tile"><span>ST</span></div>
+      </div>
+
+      <h2 class="pre-name">Sinoda Tesfay</h2>
+      <p class="pre-role">Full-Stack &amp; Systems Engineer</p>
+
+      <div class="pre-panel">
+        <div class="pre-panel-top">
+          <span class="pre-led"></span>
+          <span class="pre-panel-title">portfolio build</span>
+        </div>
+        <p class="pre-status" id="pre-status">initializing interface</p>
+        <div class="pre-track"><span class="pre-fill" id="pre-fill"></span></div>
+        <div class="pre-readout">
+          <span id="pre-modules">modules 00 / 12</span>
+          <span id="pre-pct">0%</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scroll progress -->
+  <div class="scroll-progress" aria-hidden="true"><span id="scroll-progress-bar"></span></div>
 
   <!-- Film grain overlay -->
   <div class="grain" aria-hidden="true"></div>
@@ -42,16 +99,17 @@
 
   <!-- ===================== HEADER ===================== -->
   <header id="site-header">
-    <a href="#home" class="logo" id="logo-sig" aria-label="Yabetse A, home">
-      <span class="sig">Yabetse<span class="sig-dot">.</span>A</span>
+    <a href="#home" class="logo" id="logo-sig" aria-label="Sinoda Tesfay, home">
+      <span class="sig">Sinoda<span class="sig-dot">.</span>T</span>
+      <span class="sig-rule" aria-hidden="true"></span>
     </a>
 
     <nav>
       <a href="#home" class="active">Home</a>
       <a href="#projects">Projects</a>
       <a href="#about">About</a>
-      <a href="#habits">Habits</a>
       <a href="#experience">Experience</a>
+      <a href="#education">Education</a>
       <a href="#contact">Contact</a>
     </nav>
 
@@ -66,38 +124,39 @@
 
   <!-- ===================== HERO (centered) ===================== -->
   <section class="hero" id="home">
-    <div class="hero-inner">
+    <div class="hero-inner" id="hero-inner">
 
-      <h1 class="hero-title">
-        Yabetse Tesfaye <span>Alemu</span>
-      </h1>
+      <h1 class="hero-title" id="hero-name" aria-label="Sinoda Gebrehiwot Tesfay"
+        ><span class="nm-first">Sinoda</span
+        ><span class="nm-mid" aria-hidden="true">Gebrehiwot</span
+        ><span class="nm-last">Tesfay</span></h1>
 
       <p class="hero-role">
         <span id="role-typing" class="role-typed"></span>
       </p>
 
       <p class="hero-quote">
-        "From bare-metal kernels to real-time ML systems, I build software at every
-        layer of the stack, designed to scale, survive failure, and keep evolving."
+        "I build intelligent software at the intersection of AI, infrastructure, and product,
+        turning complex ideas into reliable systems designed to evolve and make an impact."
       </p>
 
       <div class="hero-actions">
         <a href="#projects" class="btn-primary">
           View Projects <i class="fas fa-arrow-right"></i>
         </a>
-        <a href="Resume/Yabetse-Alemu-Resume.pdf" download="Yabetse Alemu - Resume.pdf" class="btn-secondary">
+        <a href="Resume/Sinoda%20Resume.pdf" download="Sinoda Tesfay - Resume.pdf" class="btn-secondary">
           <i class="fas fa-download"></i> Download Resume
         </a>
-        <a href="https://github.com/yabtesfu" target="_blank" rel="noopener" class="btn-secondary">
-          <i class="fab fa-github"></i> GitHub
+        <a href="https://www.linkedin.com/in/sinoda-tesfay-16b8983a6/" target="_blank" rel="noopener" class="btn-secondary">
+          <i class="fab fa-linkedin"></i> LinkedIn
         </a>
       </div>
 
       <div class="social-row">
-        <a href="https://github.com/yabtesfu" class="social-pill" target="_blank" rel="noopener" title="GitHub"><i class="fab fa-github"></i></a>
-        <a href="https://www.linkedin.com/in/yabetse-tesfaye-bb4a0b2a1/" class="social-pill" target="_blank" rel="noopener" title="LinkedIn"><i class="fab fa-linkedin"></i></a>
-        <a href="https://monkeytype.com/profile/Yabetse" class="social-pill" target="_blank" rel="noopener" title="MonkeyType"><i class="fas fa-keyboard"></i></a>
-        <a href="https://www.instagram.com/yab_tesfu/" class="social-pill" target="_blank" rel="noopener" title="Instagram"><i class="fab fa-instagram"></i></a>
+        <a href="https://www.linkedin.com/in/sinoda-tesfay-16b8983a6/" class="social-pill" target="_blank" rel="noopener" title="LinkedIn" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+        <a href="https://www.instagram.com/swiftiy.sinod/" class="social-pill" target="_blank" rel="noopener" title="Instagram" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+        <a href="https://t.me/sznMoh" class="social-pill" target="_blank" rel="noopener" title="Telegram" aria-label="Telegram"><i class="fab fa-telegram"></i></a>
+        <a href="https://mail.google.com/mail/?view=cm&fs=1&to=sinodca1@gmail.com" class="social-pill" target="_blank" rel="noopener" title="Email" aria-label="Email"><i class="fas fa-envelope"></i></a>
       </div>
 
       <!-- Tech logo strip -->
@@ -124,23 +183,57 @@
 
     </div>
 
-    <a href="#projects" class="scroll-cue" aria-hidden="true"><i class="fas fa-chevron-down"></i></a>
+    <a href="#projects" class="scroll-cue" aria-label="Scroll to projects"><i class="fas fa-chevron-down"></i></a>
   </section>
 
   <!-- ===================== PROJECTS ===================== -->
   <section class="pg-section" id="projects">
     <div class="section-head reveal">
       <p class="section-label">01 / PROJECTS</p>
-      <h2 class="section-title">Things I've <span>Built</span></h2>
+      <h2 class="section-title">My Recent <span>Projects</span></h2>
     </div>
 
     <div class="projects-grid">
 
+      <!-- GAN Observatory -->
+      <div class="project-card reveal" data-dir="left" data-delay="0">
+        <h3>GAN Observatory</h3>
+        <p class="proj-desc">A real-time, in-browser studio for training and analyzing GANs.</p>
+        <div class="proj-chips" data-stagger>
+          <span>Python</span><span>FastAPI</span><span>WebSockets</span><span>NumPy</span><span>Docker</span>
+        </div>
+        <ul class="proj-bullets">
+          <li>Watch a network learn a distribution live and steer training mid-run while a mode-collapse alarm watches.</li>
+          <li>Save and serve trained models over a REST API; race two GANs in an A/B derby with a time-travel scrubber.</li>
+          <li>Containerized with Docker and backed by 42 tests and continuous integration.</li>
+        </ul>
+        <div class="project-links">
+          <a href="https://github.com/yabtesfu/gan-lab-tensorflow" target="_blank" rel="noopener" class="proj-btn"><i class="fab fa-github"></i> GitHub</a>
+        </div>
+      </div>
+
+      <!-- imuStore DB -->
+      <div class="project-card reveal" data-dir="right" data-delay="90">
+        <h3>imuStore DB</h3>
+        <p class="proj-desc">A distributed database engine built from scratch in pure Python, zero dependencies.</p>
+        <div class="proj-chips" data-stagger>
+          <span>Python</span><span>B+ Tree</span><span>MVCC</span><span>Raft Consensus</span><span>Distributed Systems</span>
+        </div>
+        <ul class="proj-bullets">
+          <li>Copy-on-write B+ tree over append-only storage, with crash-safe commits that recover cleanly from power loss.</li>
+          <li>MVCC snapshots and optimistic transactions, plus Raft consensus for leader election, replication, and failover across a cluster.</li>
+          <li>Redis-protocol (RESP) server with a real-time changefeed, Prometheus metrics, Docker, and deterministic simulation testing.</li>
+        </ul>
+        <div class="project-links">
+          <a href="https://github.com/yabtesfu/imustore-db-" target="_blank" rel="noopener" class="proj-btn"><i class="fab fa-github"></i> GitHub</a>
+        </div>
+      </div>
+
       <!-- Adwa-Based Game -->
-      <div class="project-card reveal" data-delay="0">
+      <div class="project-card reveal" data-dir="left" data-delay="0">
         <h3>Adwa-Based Game</h3>
         <p class="proj-desc">A story-driven mobile RPG that retells Ethiopia's historic victory at the Battle of Adwa.</p>
-        <div class="proj-chips">
+        <div class="proj-chips" data-stagger>
           <span>Unity</span><span>C#</span><span>3D Modeling</span><span>Cinematics</span><span>Level Design</span>
         </div>
         <ul class="proj-bullets">
@@ -154,10 +247,10 @@
       </div>
 
       <!-- RustV OS Lab -->
-      <div class="project-card reveal" data-delay="100">
+      <div class="project-card reveal" data-dir="right" data-delay="90">
         <h3>RustV OS Lab</h3>
         <p class="proj-desc">A bare-metal RISC-V operating-system kernel written from scratch in Rust, booting on QEMU with no firmware.</p>
-        <div class="proj-chips">
+        <div class="proj-chips" data-stagger>
           <span>Rust</span><span>RISC-V</span><span>Bare-Metal (no_std)</span><span>RISC-V Assembly</span><span>QEMU</span>
         </div>
         <ul class="proj-bullets">
@@ -167,75 +260,6 @@
         </ul>
         <div class="project-links">
           <a href="https://github.com/yabtesfu/rustv-os-lab" target="_blank" rel="noopener" class="proj-btn"><i class="fab fa-github"></i> GitHub</a>
-        </div>
-      </div>
-
-      <!-- GAN Observatory -->
-      <div class="project-card reveal" data-delay="200">
-        <h3>GAN Observatory</h3>
-        <p class="proj-desc">A real-time, in-browser studio for training and analyzing GANs.</p>
-        <div class="proj-chips">
-          <span>Python</span><span>FastAPI</span><span>WebSockets</span><span>NumPy</span><span>Docker</span>
-        </div>
-        <ul class="proj-bullets">
-          <li>Watch a network learn a distribution live and steer training mid-run while a mode-collapse alarm watches.</li>
-          <li>Save and serve trained models over a REST API; race two GANs in an A/B derby with a time-travel scrubber.</li>
-          <li>Containerized with Docker and backed by 42 tests and continuous integration.</li>
-        </ul>
-        <div class="project-links">
-          <a href="https://github.com/yabtesfu/gan-lab-tensorflow" target="_blank" rel="noopener" class="proj-btn"><i class="fab fa-github"></i> GitHub</a>
-        </div>
-      </div>
-
-      <!-- Hulu Code -->
-      <div class="project-card reveal" data-delay="0">
-        <h3>Hulu Code</h3>
-        <p class="proj-desc">A multi-language, cloud-based platform for writing, running, and sharing code in real time.</p>
-        <div class="proj-chips">
-          <span>JavaScript</span><span>Cloud Execution</span><span>Multi-Language</span><span>Real-Time</span>
-        </div>
-        <ul class="proj-bullets">
-          <li>Built an interactive execution platform supporting 7+ programming languages, frameworks, and databases, including Python, JavaScript, and SQL.</li>
-          <li>Designed an intuitive interface for writing, running, and sharing code in real time to improve collaboration among developers.</li>
-          <li>Integrated cloud-based execution for fast experimentation, cutting environment setup time for testing and debugging.</li>
-        </ul>
-        <div class="project-links">
-          <a href="https://g15-final-project.vercel.app/" target="_blank" rel="noopener" class="proj-btn"><i class="fas fa-arrow-up-right-from-square"></i> Live Site</a>
-        </div>
-      </div>
-
-      <!-- imuStore DB -->
-      <div class="project-card reveal" data-delay="100">
-        <h3>imuStore DB</h3>
-        <p class="proj-desc">A distributed database engine built from scratch in pure Python, zero dependencies.</p>
-        <div class="proj-chips">
-          <span>Python</span><span>B+ Tree</span><span>MVCC</span><span>Raft Consensus</span><span>Distributed Systems</span>
-        </div>
-        <ul class="proj-bullets">
-          <li>Copy-on-write B+ tree over append-only storage, with crash-safe commits that recover cleanly from power loss.</li>
-          <li>MVCC snapshots and optimistic transactions, plus Raft consensus for leader election, replication, and failover across a cluster.</li>
-          <li>Redis-protocol (RESP) server with a real-time changefeed, Prometheus metrics, Docker, and deterministic simulation testing.</li>
-        </ul>
-        <div class="project-links">
-          <a href="https://github.com/yabtesfu/imustore-db-" target="_blank" rel="noopener" class="proj-btn"><i class="fab fa-github"></i> GitHub</a>
-        </div>
-      </div>
-
-      <!-- Gebeta -->
-      <div class="project-card reveal" data-delay="200">
-        <h3><span>ገበጣ</span> Gebeta</h3>
-        <p class="proj-desc">A traditional Ethiopian mancala, playable against a real AI on the desktop or in your browser.</p>
-        <div class="proj-chips">
-          <span>Java</span><span>Swing</span><span>Gradle</span><span>JUnit 5</span><span>TypeScript</span><span>Vite</span><span>GitHub Actions</span>
-        </div>
-        <ul class="proj-bullets">
-          <li>Face a real minimax opponent: alpha-beta pruning at three depths that chains free turns and lines up captures while stones sow with sound.</li>
-          <li>Save and resume any game, keep a running win record, and play the very same rules on desktop or on the web.</li>
-          <li>One pure rules engine powers both apps, backed by 42 tests and continuous integration; ships as a native installer and a browser build.</li>
-        </ul>
-        <div class="project-links">
-          <a href="https://github.com/yabtesfu/Gebeta-Game" target="_blank" rel="noopener" class="proj-btn"><i class="fab fa-github"></i> GitHub</a>
-          <a href="https://yabtesfu.github.io/Gebeta-Game/" target="_blank" rel="noopener" class="proj-btn"><i class="fas fa-play"></i> Play in browser</a>
         </div>
       </div>
 
@@ -250,26 +274,26 @@
     </div>
 
     <div class="about-wrap">
-      <div class="about-lead reveal">
-        <p>I'm a software engineer who works across the <strong>full depth of the stack</strong>, from training
-          and serving ML models to writing the kernel-level code they ultimately run on. My experience spans
-          real-time ML infrastructure, backend systems, and full-stack product development, including an AI
-          recommendation engine powering a live marketplace and streaming telemetry systems built on FastAPI
-          and WebSockets.</p>
-        <p>I like understanding systems from <strong>first principles</strong>. That's led me to build a
-          bare-metal RISC-V operating system in Rust, a distributed database with Raft consensus and MVCC from
-          scratch in pure Python, and a NumPy GAN with hand-written backpropagation, not because I had to, but
-          because knowing how things work underneath makes everything I build on top better.</p>
-        <p>Good software isn't just code that works. It solves a real problem, survives failure gracefully, and
-          leaves room for what comes next.</p>
+      <div class="about-lead reveal" data-dir="left">
+        <p>I engineer across the <strong>full depth of the stack</strong> - from the models that make a
+          product intelligent down to the kernel-level code they ultimately run on. My work sits where
+          real-time ML infrastructure, backend systems, and product engineering meet: recommendation
+          engines behind live marketplaces, telemetry streaming over FastAPI and WebSockets, and
+          interfaces that feel effortless to use.</p>
+        <p>I learn systems from <strong>first principles</strong>. That instinct is why I've written a
+          bare-metal RISC-V operating system in Rust, a distributed database with Raft consensus and MVCC
+          in pure Python, and a GAN with hand-derived backpropagation in NumPy - not because the shortcut
+          didn't exist, but because knowing what happens underneath sharpens everything built on top.</p>
+        <p>Good software isn't code that merely runs. It solves a real problem, fails gracefully, and
+          <strong>leaves room for what comes next</strong>.</p>
       </div>
 
-      <div class="about-stack reveal" data-delay="120">
+      <div class="about-stack reveal" data-dir="right" data-delay="120">
         <h3>Tech Stack</h3>
         <div class="stack-groups">
           <div class="stack-group">
             <span class="stack-cat">Languages</span>
-            <div class="tags">
+            <div class="tags" data-stagger>
               <span class="tag">Python</span>
               <span class="tag">Rust</span>
               <span class="tag">Java</span>
@@ -281,7 +305,7 @@
           </div>
           <div class="stack-group">
             <span class="stack-cat">AI &amp; ML</span>
-            <div class="tags">
+            <div class="tags" data-stagger>
               <span class="tag">TensorFlow/Keras</span>
               <span class="tag">NumPy</span>
               <span class="tag">GANs</span>
@@ -292,7 +316,7 @@
           </div>
           <div class="stack-group">
             <span class="stack-cat">Backend &amp; Systems</span>
-            <div class="tags">
+            <div class="tags" data-stagger>
               <span class="tag">FastAPI</span>
               <span class="tag">Node.js</span>
               <span class="tag">asyncio</span>
@@ -309,7 +333,7 @@
           </div>
           <div class="stack-group">
             <span class="stack-cat">Frontend</span>
-            <div class="tags">
+            <div class="tags" data-stagger>
               <span class="tag">React</span>
               <span class="tag">Next.js</span>
               <span class="tag">Tailwind CSS</span>
@@ -318,7 +342,7 @@
           </div>
           <div class="stack-group">
             <span class="stack-cat">Data &amp; Infra</span>
-            <div class="tags">
+            <div class="tags" data-stagger>
               <span class="tag">SQLite</span>
               <span class="tag">Firebase/Firestore</span>
               <span class="tag">Prometheus</span>
@@ -332,181 +356,10 @@
     </div>
   </section>
 
-  <!-- ===================== HABITS (typing + chess) ===================== -->
-  <section id="habits" class="habits-section">
-  <div class="habits-head reveal">
-    <p class="section-label">03 / HABITS</p>
-    <h2 class="section-title">Off the <span>Clock</span></h2>
-    <p class="section-sub">How I stay sharp when I'm not shipping: typing near the speed of thought and thinking a few moves ahead.</p>
-  </div>
-
-  <div class="metrics-row">
-    <!-- MONKEYTYPE TYPING -->
-    <div class="metric-col typing-section" id="typing">
-      <div class="section-head reveal">
-        <p class="section-label">03.1 / TYPING SPEED</p>
-        <h2 class="section-title">Typing at the <span>Speed</span> of Thought</h2>
-        <p class="section-sub">Tracked on MonkeyType, consistently hitting 130+ WPM.</p>
-      </div>
-
-      <div class="typing-layout">
-        <div class="wpm-hero reveal">
-          <div class="wpm-hero-num count-up" data-target="138">0</div>
-          <div class="wpm-hero-meta">
-            <span class="wpm-hero-label">WPM Best</span>
-            <span class="wpm-hero-mode">10 words · 100% accuracy</span>
-          </div>
-          <div class="wpm-hero-badge">Personal Record</div>
-        </div>
-
-        <div class="wpm-grid reveal" data-delay="100">
-          <div class="wpm-card">
-            <span class="wpm-n count-up" data-target="130">0</span>
-            <span class="wpm-u">WPM</span>
-            <span class="wpm-m">15 seconds</span>
-            <span class="wpm-a acc-green">100% acc</span>
-          </div>
-          <div class="wpm-card">
-            <span class="wpm-n count-up" data-target="121">0</span>
-            <span class="wpm-u">WPM</span>
-            <span class="wpm-m">25 words</span>
-            <span class="wpm-a acc-green">95% acc</span>
-          </div>
-          <div class="wpm-card">
-            <span class="wpm-n count-up" data-target="120">0</span>
-            <span class="wpm-u">WPM</span>
-            <span class="wpm-m">30 seconds</span>
-            <span class="wpm-a acc-green">95% acc</span>
-          </div>
-          <div class="wpm-card">
-            <span class="wpm-n count-up" data-target="90">0</span>
-            <span class="wpm-u">WPM</span>
-            <span class="wpm-m">60 seconds</span>
-            <span class="wpm-a acc-yellow">95% acc</span>
-          </div>
-        </div>
-
-        <div class="typing-stats reveal" data-delay="150">
-          <div class="typ-chip">
-            <i class="fas fa-bolt"></i>
-            <div>
-              <span class="typ-val count-up" data-target="31089">0</span>
-              <span class="typ-key">Tests Started</span>
-            </div>
-          </div>
-          <div class="typ-chip">
-            <i class="fas fa-check"></i>
-            <div>
-              <span class="typ-val count-up" data-target="1161">0</span>
-              <span class="typ-key">Tests Completed</span>
-            </div>
-          </div>
-          <div class="typ-chip">
-            <i class="fas fa-clock"></i>
-            <div>
-              <span class="typ-val count-up" data-target="32" data-suffix="h+">0h+</span>
-              <span class="typ-key">Time Typing</span>
-            </div>
-          </div>
-          <div class="typ-chip">
-            <i class="fas fa-medal"></i>
-            <div>
-              <span class="typ-val count-up" data-target="17" data-prefix="Top " data-suffix="%">Top 0%</span>
-              <span class="typ-key">Global (15s mode)</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="typing-footer reveal" data-delay="200">
-          <a href="https://monkeytype.com/profile/Yabetse" target="_blank" rel="noopener" class="monkey-btn">
-            <i class="fas fa-keyboard"></i>
-            View MonkeyType Profile
-            <i class="fas fa-arrow-right"></i>
-          </a>
-        </div>
-      </div>
-    </div>
-
-    <!-- CHESS -->
-    <div class="metric-col chess-section" id="chess">
-      <div class="section-head reveal">
-        <p class="section-label">03.2 / CHESS</p>
-        <h2 class="section-title">Thinking in <span>Moves</span></h2>
-        <p class="section-sub">Live from Chess.com, with every rating, win, and draw pulled in real time.</p>
-      </div>
-
-      <div class="leet-grid">
-        <div class="leet-donut-card reveal">
-          <div class="donut-wrap">
-            <canvas id="chessDonut"></canvas>
-            <div class="donut-center">
-              <span class="donut-big" id="chess-total">...</span>
-              <span class="donut-sub">Games</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="leet-bars reveal" data-delay="100">
-          <div class="diff-row win">
-            <div class="diff-meta">
-              <span class="diff-name">Wins</span>
-              <span class="diff-count" id="chess-win">...</span>
-            </div>
-            <div class="diff-track"><div class="diff-fill" id="chess-win-bar"></div></div>
-          </div>
-          <div class="diff-row draw">
-            <div class="diff-meta">
-              <span class="diff-name">Draws</span>
-              <span class="diff-count" id="chess-draw">...</span>
-            </div>
-            <div class="diff-track"><div class="diff-fill" id="chess-draw-bar"></div></div>
-          </div>
-          <div class="diff-row loss">
-            <div class="diff-meta">
-              <span class="diff-name">Losses</span>
-              <span class="diff-count" id="chess-loss">...</span>
-            </div>
-            <div class="diff-track"><div class="diff-fill" id="chess-loss-bar"></div></div>
-          </div>
-        </div>
-
-        <div class="leet-extras reveal" data-delay="200">
-          <div class="leet-stat-chip">
-            <i class="fas fa-stopwatch"></i>
-            <div>
-              <span class="chip-val" id="chess-rapid">...</span>
-              <span class="chip-label">Rapid Rating</span>
-            </div>
-          </div>
-          <div class="leet-stat-chip">
-            <i class="fas fa-bolt"></i>
-            <div>
-              <span class="chip-val" id="chess-blitz">...</span>
-              <span class="chip-label">Blitz Rating</span>
-            </div>
-          </div>
-          <div class="leet-stat-chip">
-            <i class="fas fa-puzzle-piece"></i>
-            <div>
-              <span class="chip-val" id="chess-tactics">...</span>
-              <span class="chip-label">Tactics Rating</span>
-            </div>
-          </div>
-          <a href="https://www.chess.com/member/yabtesfu" target="_blank" rel="noopener" class="leet-profile-btn">
-            <i class="fas fa-chess-knight"></i>
-            View Chess Profile
-            <i class="fas fa-arrow-right"></i>
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
-  </section>
-
   <!-- ===================== EXPERIENCE ===================== -->
   <section class="pg-section experience-section" id="experience">
     <div class="section-head reveal">
-      <p class="section-label">04 / EXPERIENCE</p>
+      <p class="section-label">03 / EXPERIENCE</p>
       <h2 class="section-title">Where I've <span>Worked</span></h2>
     </div>
 
@@ -527,7 +380,7 @@
             <li>Implemented a Kubernetes-based orchestration system that improved scalability and reduced deployment times by 60%.</li>
             <li>Engineered highly available Go microservices for container monitoring and management, helping maintain 99.9% system uptime.</li>
           </ul>
-          <div class="exp-tags">
+          <div class="exp-tags" data-stagger>
             <span>Go</span><span>Kubernetes</span><span>Redis</span><span>Celery</span><span>Slack API</span>
           </div>
         </div>
@@ -547,7 +400,7 @@
             <li>Mentored junior developers through code reviews and pair programming, reducing onboarding time by 30%.</li>
             <li>Translated UX wireframes into reusable React components, helping improve overall user satisfaction by 15%.</li>
           </ul>
-          <div class="exp-tags">
+          <div class="exp-tags" data-stagger>
             <span>React</span><span>Next.js</span><span>SSR/SSG</span><span>TypeScript</span>
           </div>
         </div>
@@ -571,7 +424,7 @@
             <li>Built Python-based automation tools that cut container build times by 40%, improving development efficiency.</li>
             <li>Contributed to open-source Linux projects, improving developer documentation and system tooling.</li>
           </ul>
-          <div class="exp-tags">
+          <div class="exp-tags" data-stagger>
             <span>Python</span><span>FastAPI</span><span>TensorFlow</span><span>WebSockets</span><span>Rust</span><span>Docker</span>
           </div>
         </div>
@@ -583,7 +436,7 @@
   <!-- ===================== EDUCATION ===================== -->
   <section class="pg-section education-section" id="education">
     <div class="section-head reveal">
-      <p class="section-label">05 / EDUCATION</p>
+      <p class="section-label">04 / EDUCATION</p>
       <h2 class="section-title">Where I've <span>Studied</span></h2>
     </div>
 
@@ -596,9 +449,9 @@
             <h3>Software Engineering</h3>
             <span class="exp-period">2014 - 2019</span>
           </div>
-          <p class="exp-org"><i class="fas fa-graduation-cap"></i> American College of Technology <span class="exp-loc">· Addis Ababa, Ethiopia</span></p>
+          <p class="exp-org"><i class="fas fa-graduation-cap"></i> Addis Ababa Institute of Technology <span class="exp-loc">· Addis Ababa, Ethiopia</span></p>
           <p class="exp-desc">Relevant coursework spanning the full software engineering foundation:</p>
-          <div class="exp-tags">
+          <div class="exp-tags" data-stagger>
             <span>Data Structures &amp; Algorithms</span>
             <span>Web &amp; Mobile Development</span>
             <span>Machine Learning &amp; AI</span>
@@ -624,7 +477,7 @@
           <ul class="exp-bullets">
             <li>Completed a rigorous boot camp focused on data structures and algorithms, built to prepare participants for software engineering interviews at leading tech firms.</li>
           </ul>
-          <div class="exp-tags">
+          <div class="exp-tags" data-stagger>
             <span>Data Structures</span><span>Algorithms</span><span>Competitive Programming</span><span>Interview Prep</span>
           </div>
         </div>
@@ -636,7 +489,7 @@
   <!-- ===================== CONTACT ===================== -->
   <section class="pg-section contact-section" id="contact">
     <div class="section-head reveal">
-      <p class="section-label">06 / CONTACT</p>
+      <p class="section-label">05 / CONTACT</p>
       <h2 class="section-title"><span>connect</span></h2>
     </div>
 
@@ -644,20 +497,20 @@
       <p class="contact-line">Open to collaborating on complex systems problems.</p>
 
       <div class="contact-icons">
-        <a href="https://www.instagram.com/yab_tesfu/" target="_blank" rel="noopener" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-        <a href="https://github.com/yabtesfu" target="_blank" rel="noopener" aria-label="GitHub"><i class="fab fa-github"></i></a>
-        <a href="https://www.linkedin.com/in/yabetse-tesfaye-bb4a0b2a1/" target="_blank" rel="noopener" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
-        <a href="https://telegram.me/This_is_yab" target="_blank" rel="noopener" aria-label="Telegram"><i class="fas fa-paper-plane"></i></a>
+        <a href="https://www.instagram.com/swiftiy.sinod/" target="_blank" rel="noopener" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+        <a href="https://www.linkedin.com/in/sinoda-tesfay-16b8983a6/" target="_blank" rel="noopener" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+        <a href="https://t.me/sznMoh" target="_blank" rel="noopener" aria-label="Telegram"><i class="fab fa-telegram"></i></a>
+        <a href="https://mail.google.com/mail/?view=cm&fs=1&to=sinodca1@gmail.com" target="_blank" rel="noopener" aria-label="Email"><i class="fas fa-envelope"></i></a>
       </div>
 
-      <a href="https://mail.google.com/mail/?view=cm&fs=1&to=yabtesfu@gmail.com" target="_blank" rel="noopener" class="contact-email">yabtesfu@gmail.com</a>
+      <a href="https://mail.google.com/mail/?view=cm&fs=1&to=sinodca1@gmail.com" target="_blank" rel="noopener" class="contact-email">sinodca1@gmail.com</a>
     </div>
   </section>
 
   <!-- ===================== FOOTER ===================== -->
   <footer>
     <div class="footer-inner">
-      <p class="foot-copy">© 2026 Yabetse Tesfaye Alemu. Built from the ground up.</p>
+      <p class="foot-copy">© 2026 Sinoda Tesfay. Engineered with intention.</p>
     </div>
   </footer>
 

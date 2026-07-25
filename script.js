@@ -1,6 +1,9 @@
 /* ================================================
-   YABETSE PORTFOLIO - script.js
+   SINODA TESFAY PORTFOLIO - script.js
    ================================================ */
+
+const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
 
 /* ---------- HERO INTRO: typing + signature logo ---------- */
 const ROLE_TEXT = 'Full-Stack & Systems Engineer';
@@ -25,7 +28,8 @@ function typeRole() {
   step();
 }
 
-/* Replay the cursive signature write-on animation. */
+/* Replay the signature write-on. The underline shares the same keyframe
+   timing, so both edges travel across the logo together. */
 function playSignature() {
   if (!logoEl) return;
   logoEl.classList.remove('play');
@@ -37,12 +41,6 @@ function playHeroIntro() {
   playSignature();
   typeRole();
 }
-
-window.addEventListener('load', playHeroIntro);
-/* Fallback in case load already fired */
-document.addEventListener('DOMContentLoaded', () => {
-  if (document.readyState === 'complete') playHeroIntro();
-});
 
 /* Replay the intro when the user scrolls back to the top after going down. */
 let scrolledAway = false;
@@ -56,20 +54,106 @@ window.addEventListener('scroll', () => {
 }, { passive: true });
 
 
+/* ---------- LOADING SCREEN ----------
+   Runs on every load: the ring and bar fill while the build log ticks
+   over, then the whole panel dissolves into the hero. */
+(function preloader() {
+  const root = document.getElementById('preloader');
+  if (!root) { playHeroIntro(); return; }
+
+  const arcEl     = document.getElementById('pre-arc');
+  const fillEl    = document.getElementById('pre-fill');
+  const statusEl  = document.getElementById('pre-status');
+  const modulesEl = document.getElementById('pre-modules');
+  const pctEl     = document.getElementById('pre-pct');
+
+  const STAGES = [
+    { at:  0, text: 'initializing interface' },
+    { at: 14, text: 'compiling design tokens' },
+    { at: 30, text: 'loading project archive' },
+    { at: 48, text: 'warming the inference layer' },
+    { at: 64, text: 'linking systems telemetry' },
+    { at: 80, text: 'calibrating scroll timeline' },
+    { at: 94, text: 'ready' },
+  ];
+
+  const TOTAL_MODULES = 12;
+  const ARC_LENGTH    = 364.4;              // 2 * PI * r, r = 58
+  const DURATION      = REDUCED ? 600 : 2600;
+
+  let finished = false;
+  let pageReady = document.readyState === 'complete';
+  window.addEventListener('load', () => { pageReady = true; });
+
+  let stage = -1;
+  function paint(p) {
+    const pct = Math.round(p);
+    if (fillEl) fillEl.style.width = pct + '%';
+    if (arcEl)  arcEl.style.strokeDashoffset = ARC_LENGTH * (1 - p / 100);
+    if (pctEl)  pctEl.textContent = pct + '%';
+    if (modulesEl) {
+      const done = Math.min(TOTAL_MODULES, Math.round((p / 100) * TOTAL_MODULES));
+      modulesEl.textContent = 'modules ' + String(done).padStart(2, '0') + ' / ' + TOTAL_MODULES;
+    }
+    for (let i = STAGES.length - 1; i >= 0; i--) {
+      if (pct >= STAGES[i].at) {
+        if (stage !== i) { stage = i; if (statusEl) statusEl.textContent = STAGES[i].text; }
+        break;
+      }
+    }
+  }
+
+  function dismiss() {
+    if (finished) return;
+    finished = true;
+    document.body.classList.remove('preloading');
+    playHeroIntro();
+    setTimeout(() => root.classList.add('gone'), 950);
+  }
+
+  const started = performance.now();
+  function frame(now) {
+    const t = Math.min((now - started) / DURATION, 1);
+    paint((1 - Math.pow(1 - t, 2.2)) * 100);
+    if (t < 1) { requestAnimationFrame(frame); return; }
+    // Sit at 100% until the page itself is ready, but never stall forever.
+    const holdStarted = performance.now();
+    (function hold() {
+      if (pageReady || performance.now() - holdStarted > 2000) {
+        setTimeout(dismiss, REDUCED ? 0 : 320);
+      } else {
+        requestAnimationFrame(hold);
+      }
+    })();
+  }
+  paint(0);
+  requestAnimationFrame(frame);
+
+  // Hard safety net: never trap the visitor behind the loader.
+  setTimeout(dismiss, 7000);
+})();
+
+
+/* ---------- FULL NAME REVEAL (tap support on touch devices) ---------- */
+const heroName = document.getElementById('hero-name');
+if (heroName) {
+  heroName.addEventListener('click', () => heroName.classList.toggle('show-mid'));
+}
+
+
 /* ---------- THEME TOGGLE + LIVE FAVICON ---------- */
 const themeToggle = document.getElementById('theme-toggle');
 const themeColorMeta = document.querySelector('meta[name="theme-color"]');
 const faviconLink = document.querySelector('link[rel="icon"]');
 
-/* The brand "y" mark is drawn on a canvas so it can smoothly morph between the
-   dark palette (dark bg, cream y) and the light palette (white bg, black y)
-   as the in-page theme toggle flips. The lime dot stays constant. */
+/* The tile mark from favicon.svg is redrawn on a canvas so it can morph
+   between the dark and light palettes as the in-page toggle flips. */
 const faviconCanvas = document.createElement('canvas');
 faviconCanvas.width = faviconCanvas.height = 64;
 
-const FAV_BG_DARK = [16, 17, 9],    FAV_BG_LIGHT = [255, 255, 255];
-const FAV_Y_DARK  = [243, 240, 231], FAV_Y_LIGHT  = [16, 17, 9];
-const FAV_DOT     = 'rgb(155,224,0)';
+const FAV_BG_DARK   = [11, 11, 13],   FAV_BG_LIGHT   = [255, 255, 255];
+const FAV_TILE_DARK = [155, 224, 0],  FAV_TILE_LIGHT = [63, 122, 0];
+const FAV_DOT_DARK  = [47, 106, 0],   FAV_DOT_LIGHT  = [155, 224, 0];
 
 function favMix(a, b, t) {
   const c = i => Math.round(a[i] + (b[i] - a[i]) * t);
@@ -95,25 +179,25 @@ function drawFavicon(t) {
   ctx.clearRect(0, 0, S, S);
   ctx.save();
   ctx.scale(S / 512, S / 512);
+
   // squircle background
   ctx.fillStyle = favMix(FAV_BG_DARK, FAV_BG_LIGHT, t);
-  favRoundRect(ctx, 0, 0, 512, 512, 128);
+  favRoundRect(ctx, 0, 0, 512, 512, 120);
   ctx.fill();
-  // script "y"
-  ctx.strokeStyle = favMix(FAV_Y_DARK, FAV_Y_LIGHT, t);
-  ctx.lineWidth = 48;
-  ctx.lineCap = 'round';
-  ctx.lineJoin = 'round';
+
+  // three rounded tiles
+  ctx.fillStyle = favMix(FAV_TILE_DARK, FAV_TILE_LIGHT, t);
+  [[92, 92], [270, 92], [92, 270]].forEach(([x, y]) => {
+    favRoundRect(ctx, x, y, 150, 150, 40);
+    ctx.fill();
+  });
+
+  // the fourth cell, as a dot
+  ctx.fillStyle = favMix(FAV_DOT_DARK, FAV_DOT_LIGHT, t);
   ctx.beginPath();
-  ctx.moveTo(150, 156); ctx.lineTo(245, 300);
-  ctx.moveTo(340, 156); ctx.lineTo(245, 300);
-  ctx.bezierCurveTo(243, 362, 236, 398, 168, 400);
-  ctx.stroke();
-  // lime dot
-  ctx.fillStyle = FAV_DOT;
-  ctx.beginPath();
-  ctx.arc(372, 322, 40, 0, Math.PI * 2);
+  ctx.arc(345, 345, 75, 0, Math.PI * 2);
   ctx.fill();
+
   ctx.restore();
   faviconLink.type = 'image/png';
   faviconLink.href = faviconCanvas.toDataURL('image/png');
@@ -141,18 +225,13 @@ function applyThemeChrome(isLight) {
 }
 
 if (themeToggle) {
-  const saved = localStorage.getItem('theme');
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const theme = saved || (prefersDark ? 'dark' : 'light');
-
-  if (theme === 'light') {
-    document.body.classList.add('light-theme');
-    themeToggle.classList.add('light');
-  }
-  applyThemeChrome(theme === 'light');
+  // The inline head script already painted body.light-theme; mirror it here.
+  const isLightNow = document.body.classList.contains('light-theme');
+  if (isLightNow) themeToggle.classList.add('light');
+  applyThemeChrome(isLightNow);
 
   // paint the initial favicon to match the starting theme (no animation)
-  faviconT = theme === 'light' ? 1 : 0;
+  faviconT = isLightNow ? 1 : 0;
   drawFavicon(faviconT);
 
   themeToggle.addEventListener('click', () => {
@@ -179,7 +258,7 @@ if (cursorDot && window.matchMedia('(hover: hover)').matches) {
 
   document.addEventListener('mouseleave', () => { cursorDot.style.opacity = '0'; });
 
-  const interactive = 'a, button, .project-card, .exp-card, .theme-switch, .social-pill, .tag, .contact-chip';
+  const interactive = 'a, button, .project-card, .exp-card, .theme-switch, .social-pill, .tag, .hero-title';
   document.addEventListener('mouseover', e => {
     if (e.target.closest(interactive)) cursorDot.classList.add('hovering');
   });
@@ -228,320 +307,117 @@ navLinks.forEach(link => {
 });
 
 
-/* ---------- SCROLL REVEAL ---------- */
-const revealEls = document.querySelectorAll('.reveal');
+/* ---------- SECTION TITLES: SPLIT INTO RISING WORDS ---------- */
+document.querySelectorAll('.section-title').forEach(title => {
+  if (title.dataset.split) return;
+  title.dataset.split = '1';
 
+  const frag = document.createDocumentFragment();
+  let index = 0;
+
+  const addWords = (text, accent) => {
+    text.split(/\s+/).filter(Boolean).forEach(word => {
+      const outer = document.createElement('span');
+      outer.className = accent ? 'w w-accent' : 'w';
+      outer.style.setProperty('--i', index++);
+      const inner = document.createElement('span');
+      inner.className = 'w-in';
+      inner.textContent = word;
+      outer.appendChild(inner);
+      frag.appendChild(outer);
+      frag.appendChild(document.createTextNode(' '));
+    });
+  };
+
+  Array.from(title.childNodes).forEach(node => {
+    if (node.nodeType === Node.TEXT_NODE) addWords(node.textContent, false);
+    else addWords(node.textContent, true);   // the <span> accent fragment
+  });
+
+  title.textContent = '';
+  title.appendChild(frag);
+});
+
+
+/* ---------- SCROLL REVEAL ---------- */
 const revealObs = new IntersectionObserver(entries => {
   entries.forEach(entry => {
     if (!entry.isIntersecting) return;
-    const delay = parseInt(entry.target.dataset.delay || 0);
+    const delay = parseInt(entry.target.dataset.delay || 0, 10);
     setTimeout(() => entry.target.classList.add('visible'), delay);
     revealObs.unobserve(entry.target);
   });
-}, { threshold: 0.08 });
+}, { threshold: 0.08, rootMargin: '0px 0px -6% 0px' });
 
-revealEls.forEach(el => revealObs.observe(el));
+document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
 
 
-/* ---------- COUNTER ANIMATION ---------- */
-function formatCountValue(value, prefix = '', suffix = '') {
-  return `${prefix}${Math.round(value).toLocaleString()}${suffix}`;
-}
-
-function animateCount(el, target, ms = 1400, options = {}) {
-  if (!el) return;
-  const prefix = options.prefix || '';
-  const suffix = options.suffix || '';
-  if (el._countFrame) cancelAnimationFrame(el._countFrame);
-  if (target === 0) {
-    el.textContent = formatCountValue(0, prefix, suffix);
-    return;
-  }
-  const start = performance.now();
-  const update = now => {
-    const p = Math.min((now - start) / ms, 1);
-    const ease = 1 - Math.pow(1 - p, 3);
-    el.textContent = formatCountValue(ease * target, prefix, suffix);
-    if (p < 1) {
-      el._countFrame = requestAnimationFrame(update);
-    } else {
-      el._countFrame = null;
-    }
-  };
-  el._countFrame = requestAnimationFrame(update);
-}
-
-function resetCount(el) {
-  if (!el) return;
-  if (el._countFrame) cancelAnimationFrame(el._countFrame);
-  el._countFrame = null;
-  el.textContent = formatCountValue(0, el.dataset.prefix || '', el.dataset.suffix || '');
-}
-
-function playTypingStats() {
-  document.querySelectorAll('#typing .count-up').forEach(el => {
-    animateCount(el, Number(el.dataset.target || 0), 1300, {
-      prefix: el.dataset.prefix || '',
-      suffix: el.dataset.suffix || '',
-    });
+/* ---------- STAGGERED CHIP CASCADES ---------- */
+const staggerObs = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (!entry.isIntersecting) return;
+    entry.target.classList.add('shown');
+    staggerObs.unobserve(entry.target);
   });
-}
+}, { threshold: 0.2 });
 
-function resetTypingStats() {
-  document.querySelectorAll('#typing .count-up').forEach(resetCount);
-}
+document.querySelectorAll('[data-stagger]').forEach(group => {
+  Array.from(group.children).forEach((child, i) => child.style.setProperty('--i', i));
+  staggerObs.observe(group);
+});
 
 
-/* ---------- CHESS CANVAS DONUT ---------- */
-let chessAnimationFrame = null;
-let chessBarsTimeout = null;
-let chessInView = false;
-let latestChessStats = null;
-
-function renderChessDonut(win, draw, loss, progress = 1) {
-  const canvas = document.getElementById('chessDonut');
-  if (!canvas) return;
-
-  const dpr  = window.devicePixelRatio || 1;
-  const size = 180;
-  canvas.width  = size * dpr;
-  canvas.height = size * dpr;
-  canvas.style.width  = size + 'px';
-  canvas.style.height = size + 'px';
-
-  const ctx = canvas.getContext('2d');
-  ctx.scale(dpr, dpr);
-
-  const cx    = size / 2;
-  const cy    = size / 2;
-  const R     = 72;
-  const lw    = 15;
-  const total = win + draw + loss;
-
-  const segments = total > 0
-    ? [
-        { val: win,  color: '#00b8a9' },
-        { val: draw, color: '#ffc01e' },
-        { val: loss, color: '#ef4743' },
-      ]
-    : [];
-
-  ctx.clearRect(0, 0, size, size);
-
-  // Background track
-  ctx.beginPath();
-  ctx.arc(cx, cy, R, 0, 2 * Math.PI);
-  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
-  ctx.lineWidth   = lw;
-  ctx.stroke();
-
-  if (total === 0) return;
-
-  const gap     = 0.04;
-  const filled  = segments.filter(s => s.val > 0);
-  const totalAngle = 2 * Math.PI - filled.length * gap;
-  let start     = -0.01;
-
-  filled.forEach(seg => {
-    const fullAngle = (seg.val / total) * totalAngle;
-    const drawAngle = fullAngle * progress;
-
-    ctx.beginPath();
-    ctx.arc(cx, cy, R, start, start + drawAngle);
-    ctx.strokeStyle = seg.color;
-    ctx.lineWidth   = lw;
-    ctx.lineCap     = 'round';
-    ctx.stroke();
-    start += fullAngle + gap;
+/* ---------- TIMELINE SPINE DRAW-IN ---------- */
+const timelineObs = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (!entry.isIntersecting) return;
+    entry.target.classList.add('drawn');
+    timelineObs.unobserve(entry.target);
   });
-}
+}, { threshold: 0.05 });
 
-function playChessAnimation(stats = latestChessStats) {
-  if (!stats) return;
-  if (chessAnimationFrame) cancelAnimationFrame(chessAnimationFrame);
+document.querySelectorAll('.timeline').forEach(el => timelineObs.observe(el));
 
-  latestChessStats = stats;
-  resetChessStats(false);
 
-  const total = stats.total || (stats.win + stats.draw + stats.loss);
-  const totalEl = document.getElementById('chess-total');
-  if (totalEl) animateCount(totalEl, total, 1500);
+/* ---------- SCROLL PROGRESS + HERO PARALLAX ---------- */
+const progressBar = document.getElementById('scroll-progress-bar');
+const heroInner   = document.getElementById('hero-inner');
+const headerEl    = document.getElementById('site-header');
 
-  setText('chess-rapid',   stats.rapid   > 0 ? stats.rapid.toLocaleString()   : 'N/A');
-  setText('chess-blitz',   stats.blitz   > 0 ? stats.blitz.toLocaleString()   : 'N/A');
-  setText('chess-tactics', stats.tactics > 0 ? stats.tactics.toLocaleString() : 'N/A');
+let scrollTicking = false;
+function onScrollFrame() {
+  scrollTicking = false;
+  const y = window.scrollY;
 
-  setText('chess-win',  stats.win.toLocaleString());
-  setText('chess-draw', stats.draw.toLocaleString());
-  setText('chess-loss', stats.loss.toLocaleString());
-
-  if (chessBarsTimeout) clearTimeout(chessBarsTimeout);
-  chessBarsTimeout = setTimeout(() => {
-    setWidth('chess-win-bar',  pct(stats.win,  total));
-    setWidth('chess-draw-bar', pct(stats.draw, total));
-    setWidth('chess-loss-bar', pct(stats.loss, total));
-    chessBarsTimeout = null;
-  }, 180);
-
-  const duration = 1500;
-  const started = performance.now();
-
-  function frame(now) {
-    const p = Math.min((now - started) / duration, 1);
-    const ease = 1 - Math.pow(1 - p, 2);
-    renderChessDonut(stats.win, stats.draw, stats.loss, ease);
-    if (p < 1) {
-      chessAnimationFrame = requestAnimationFrame(frame);
-    } else {
-      chessAnimationFrame = null;
-    }
+  if (progressBar) {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    progressBar.style.width = (max > 0 ? Math.min(y / max, 1) * 100 : 0) + '%';
   }
 
-  chessAnimationFrame = requestAnimationFrame(frame);
-}
-
-function resetChessStats(clearText = true) {
-  if (chessAnimationFrame) cancelAnimationFrame(chessAnimationFrame);
-  if (chessBarsTimeout) clearTimeout(chessBarsTimeout);
-  chessAnimationFrame = null;
-  chessBarsTimeout = null;
-  renderChessDonut(0, 0, 0);
-  setWidth('chess-win-bar', 0);
-  setWidth('chess-draw-bar', 0);
-  setWidth('chess-loss-bar', 0);
-
-  if (!clearText) return;
-  const totalEl = document.getElementById('chess-total');
-  if (totalEl) {
-    if (totalEl._countFrame) cancelAnimationFrame(totalEl._countFrame);
-    totalEl._countFrame = null;
-    totalEl.textContent = '...';
+  if (heroInner && !REDUCED) {
+    const vh = window.innerHeight || 1;
+    const p = Math.min(y / vh, 1);
+    heroInner.style.setProperty('--hero-shift', (p * 90).toFixed(1) + 'px');
+    heroInner.style.setProperty('--hero-fade', Math.max(0, 1 - p * 1.25).toFixed(3));
   }
-  setText('chess-win', '...');
-  setText('chess-draw', '...');
-  setText('chess-loss', '...');
-  setText('chess-rapid', '...');
-  setText('chess-blitz', '...');
-  setText('chess-tactics', '...');
-}
 
-/* ---------- TYPING STATS WHEN VISIBLE ---------- */
-const typingSection = document.getElementById('typing');
-if (typingSection) {
-  resetTypingStats();
-  const typingObs = new IntersectionObserver(entries => {
-    if (entries[0].isIntersecting) {
-      playTypingStats();
-    } else {
-      resetTypingStats();
-    }
-  }, { threshold: 0.28 });
-  typingObs.observe(typingSection);
-}
-
-
-/* ---------- CHESS DATA FETCH (Chess.com public API) ---------- */
-let chessLoaded = false;
-
-async function loadChess() {
-  if (chessLoaded) {
-    if (chessInView) playChessAnimation();
-    return;
-  }
-  chessLoaded = true;
-
-  const username = 'yabtesfu';
-
-  try {
-    const res = await fetch(
-      `https://api.chess.com/pub/player/${username}/stats`,
-      { signal: AbortSignal.timeout(7000) }
-    );
-    if (!res.ok) throw new Error('chess api failed');
-    const d = await res.json();
-    applyChessStats(d);
-  } catch {
-    chessLoaded = false; // allow a retry next time the section scrolls into view
-    showChessFallback();
+  if (headerEl) {
+    headerEl.style.boxShadow = y > 20 ? '0 1px 30px rgba(0,0,0,0.3)' : 'none';
   }
 }
 
-function applyChessStats(d) {
-  const classes = ['chess_rapid', 'chess_blitz', 'chess_bullet', 'chess_daily'];
-  let win = 0, draw = 0, loss = 0, peak = 0;
-
-  classes.forEach(key => {
-    const c = d[key];
-    if (!c) return;
-    if (c.record) {
-      win  += c.record.win  || 0;
-      loss += c.record.loss || 0;
-      draw += c.record.draw || 0;
-    }
-    if (c.best && c.best.rating > peak) peak = c.best.rating;
-  });
-
-  const rapid   = (d.chess_rapid && d.chess_rapid.last && d.chess_rapid.last.rating) || 0;
-  const blitz   = (d.chess_blitz && d.chess_blitz.last && d.chess_blitz.last.rating) || 0;
-  const tactics = (d.tactics && d.tactics.highest && d.tactics.highest.rating) || 0;
-
-  latestChessStats = { win, draw, loss, rapid, blitz, tactics, peak, total: win + draw + loss };
-  if (chessInView) playChessAnimation();
-}
-
-function showChessFallback() {
-  // Draw an empty donut and keep the loading-style placeholders.
-  resetChessStats();
-}
-
-// Helpers
-function setText(id, val) {
-  const el = document.getElementById(id);
-  if (el) el.textContent = val;
-}
-
-function setWidth(id, w) {
-  const el = document.getElementById(id);
-  if (el) el.style.width = w + '%';
-}
-
-function pct(n, total) {
-  return total > 0 ? Math.round((n / total) * 100) : 0;
-}
-
-
-/* ---------- TRIGGER CHESS WHEN VISIBLE ---------- */
-const chessSection = document.getElementById('chess');
-if (chessSection) {
-  resetChessStats();
-  const cObs = new IntersectionObserver(entries => {
-    chessInView = entries[0].isIntersecting;
-    if (chessInView) {
-      loadChess();
-    } else {
-      resetChessStats();
-    }
-  }, { threshold: 0.28 });
-  cObs.observe(chessSection);
-}
-
-
-/* ---------- HEADER SCROLL SHADOW ---------- */
-const headerEl = document.getElementById('site-header');
-if (headerEl) {
-  window.addEventListener('scroll', () => {
-    headerEl.style.boxShadow = window.scrollY > 20
-      ? '0 1px 30px rgba(0,0,0,0.3)'
-      : 'none';
-  }, { passive: true });
-}
+window.addEventListener('scroll', () => {
+  if (scrollTicking) return;
+  scrollTicking = true;
+  requestAnimationFrame(onScrollFrame);
+}, { passive: true });
+onScrollFrame();
 
 
 /* ---------- EXPERIENCE CARD CURSOR-TILT ---------- */
 (function () {
   const canHover = window.matchMedia('(hover: hover)').matches;
-  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (!canHover || reduced) return;
+  if (!canHover || REDUCED) return;
 
   document.querySelectorAll('.exp-card').forEach(card => {
     card.addEventListener('mousemove', e => {
