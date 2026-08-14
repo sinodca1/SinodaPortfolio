@@ -1,17 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <style>
-    .bg   { fill: #0b0b0d; transition: fill .35s ease; }
-    .tile { fill: #9be000; transition: fill .35s ease; }
-    .dot  { fill: #2f6a00; transition: fill .35s ease; }
-    @media (prefers-color-scheme: light) {
-      .bg   { fill: #ffffff; }
-      .tile { fill: #3f7a00; }
-      .dot  { fill: #9be000; }
-    }
-  </style>
-  <rect class="bg" width="512" height="512" rx="120"/>
-  <rect class="tile" x="92"  y="92"  width="150" height="150" rx="40"/>
-  <rect class="tile" x="270" y="92"  width="150" height="150" rx="40"/>
-  <rect class="tile" x="92"  y="270" width="150" height="150" rx="40"/>
-  <circle class="dot" cx="345" cy="345" r="75"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+<defs><radialGradient id="g" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#9fe870" stop-opacity="0.9"></stop><stop offset="55%" stop-color="#9fe870" stop-opacity="0.25"></stop><stop offset="100%" stop-color="#9fe870" stop-opacity="0"></stop></radialGradient></defs>
+<rect width="64" height="64" rx="14" fill="#0a0d0a"></rect>
+<g fill="#e4eae0" opacity="0.28">
+<circle cx="12" cy="12" r="1.3"></circle><circle cx="28" cy="12" r="1.3"></circle><circle cx="44" cy="12" r="1.3"></circle><circle cx="60" cy="12" r="1.3"></circle>
+<circle cx="12" cy="28" r="1.3"></circle><circle cx="28" cy="28" r="1.3"></circle><circle cx="60" cy="28" r="1.3"></circle>
+<circle cx="12" cy="44" r="1.3"></circle><circle cx="44" cy="44" r="1.3"></circle><circle cx="60" cy="44" r="1.3"></circle>
+<circle cx="12" cy="60" r="1.3"></circle><circle cx="28" cy="60" r="1.3"></circle><circle cx="44" cy="60" r="1.3"></circle>
+</g>
+<circle cx="42" cy="27" r="13" fill="url(#g)"></circle>
+<circle cx="42" cy="27" r="4.2" fill="#9fe870"></circle>
+<path d="M14 47 C 22 39, 32 49, 44 41 S 54 43, 56 39" stroke="#4c6a38" stroke-width="2.2" fill="none" stroke-linecap="round"></path>
 </svg>

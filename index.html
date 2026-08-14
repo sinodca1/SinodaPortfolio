@@ -6,14 +6,16 @@
   <title>Sinoda Tesfay | Full-Stack &amp; Systems Engineer</title>
   <meta name="description" content="Sinoda Gebrehiwot Tesfay - full-stack and systems engineer building intelligent software across AI, infrastructure, and product." />
 
-  <!-- Favicon (single SVG that adapts to system light/dark) -->
+  <!-- Favicon: the system's night-sky dot-grid mark -->
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
-  <meta name="theme-color" content="#09090b" />
+  <link rel="alternate icon" href="favicon.png" type="image/png" />
+  <link rel="apple-touch-icon" href="favicon.png" />
+  <meta name="theme-color" content="#fafbf8" />
 
-  <!-- Fonts: Arvo (site) + Dancing Script (signature logo fallback) -->
+  <!-- Display face (heavy all-caps grotesque) + the monospace second voice -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Arvo:ital,wght@0,400;0,700;1,400;1,700&family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 
   <!-- Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
@@ -25,14 +27,19 @@
 
 <body>
 
-  <!-- Paint the saved theme + arm the loader before anything renders (no flash) -->
+  <!-- Paint the saved theme + arm the loader before anything renders (no flash).
+       Mode is one of light | dark | system; system follows the OS. -->
   <script>
     (function () {
-      try {
-        var saved = localStorage.getItem('theme');
-        var dark  = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        if ((saved || (dark ? 'dark' : 'light')) === 'light') document.body.classList.add('light-theme');
-      } catch (e) { /* storage blocked - fall through to dark */ }
+      var mode = 'system';
+      try { mode = localStorage.getItem('folio-theme') || 'system'; } catch (e) { /* storage blocked */ }
+      if (mode !== 'light' && mode !== 'dark') mode = 'system';
+      var resolved = mode;
+      if (mode === 'system') {
+        resolved = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      document.documentElement.dataset.theme = resolved;
+      document.documentElement.dataset.themeMode = mode;
       document.body.classList.add('preloading');
     })();
   </script>
@@ -78,45 +85,43 @@
     </div>
   </div>
 
-  <!-- Film grain overlay -->
-  <div class="grain" aria-hidden="true"></div>
+  <!-- Night-sky twinkle over the dotted canvas -->
+  <canvas class="starfield" id="starfield" aria-hidden="true"></canvas>
 
-  <!-- Ambient background orbs -->
-  <div class="bg-orbs" aria-hidden="true">
-    <div class="orb orb-1"></div>
-    <div class="orb orb-2"></div>
-    <div class="orb orb-3"></div>
-  </div>
-
-  <!-- Dotted grid backdrop -->
-  <div class="dot-grid" aria-hidden="true"></div>
-
-  <!-- Cursor-following glow -->
+  <!-- Grain-size dot that springs after the pointer -->
   <div class="cursor-dot" aria-hidden="true"></div>
 
   <!-- ===================== HEADER ===================== -->
   <header id="site-header">
     <a href="#home" class="logo" id="logo-sig" aria-label="Sinoda Tesfay, home">
       <span class="sig">Sinoda<span class="sig-dot">.</span>T</span>
-      <span class="sig-rule" aria-hidden="true"></span>
+      <svg class="sig-rule" viewBox="0 0 60 6" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M1 4 C 15 1.5, 30 5, 59 2.5" />
+      </svg>
     </a>
 
-    <nav>
-      <span class="nav-pill" id="nav-pill" aria-hidden="true"></span>
-      <a href="#home" class="active">Home</a>
-      <a href="#projects">Projects</a>
-      <a href="#about">About</a>
-      <a href="#experience">Experience</a>
-      <a href="#education">Education</a>
-      <a href="#contact">Contact</a>
-    </nav>
+    <div class="nav-shell">
+      <nav>
+        <span class="nav-pill" id="nav-pill" aria-hidden="true"></span>
+        <a href="#home" class="active">Home</a>
+        <a href="#projects">Projects</a>
+        <a href="#about">About</a>
+        <a href="#experience">Experience</a>
+        <a href="#contact">Contact</a>
+      </nav>
 
-    <div class="theme-switch" id="theme-toggle" aria-label="Toggle theme">
-      <div class="theme-switch-track">
-        <i class="fa-solid fa-moon theme-icon-moon"></i>
-        <i class="fa-solid fa-sun theme-icon-sun"></i>
-        <div class="theme-switch-thumb"></div>
-      </div>
+      <!-- Cycles light -> dark -> system -->
+      <button class="theme-switch" id="theme-toggle" type="button" data-mode="system" aria-label="Theme: system (click to switch)" title="Theme: system">
+        <svg class="ico-sun" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>
+        </svg>
+        <svg class="ico-moon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+        </svg>
+        <svg class="ico-system" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/>
+        </svg>
+      </button>
     </div>
   </header>
 
@@ -134,8 +139,8 @@
       </p>
 
       <p class="hero-quote">
-        "I build intelligent software at the intersection of AI, infrastructure, and product,
-        turning complex ideas into reliable systems designed to evolve and make an impact."
+        &ldquo;I build intelligent software at the intersection of AI, infrastructure, and product,
+        turning complex problems into reliable systems that scale.&rdquo;
       </p>
 
       <div class="hero-actions">
@@ -145,13 +150,13 @@
         <a href="Resume/Sinoda%20Resume.pdf" download="Sinoda Tesfay - Resume.pdf" class="btn-secondary">
           <i class="fas fa-download"></i> Download Resume
         </a>
-        <a href="https://www.linkedin.com/in/sinoda-tesfay-16b8983a6/" target="_blank" rel="noopener" class="btn-secondary">
+        <a href="https://www.linkedin.com/in/sinoda-tesfay/" target="_blank" rel="noopener" class="btn-secondary">
           <i class="fab fa-linkedin"></i> LinkedIn
         </a>
       </div>
 
       <div class="social-row">
-        <a href="https://www.linkedin.com/in/sinoda-tesfay-16b8983a6/" class="social-pill" target="_blank" rel="noopener" title="LinkedIn" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+        <a href="https://github.com/yabtesfu" class="social-pill" target="_blank" rel="noopener" title="GitHub" aria-label="GitHub"><i class="fab fa-github"></i></a>
         <a href="https://www.instagram.com/swiftiy.sinod/" class="social-pill" target="_blank" rel="noopener" title="Instagram" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
         <a href="https://t.me/sznMoh" class="social-pill" target="_blank" rel="noopener" title="Telegram" aria-label="Telegram"><i class="fab fa-telegram"></i></a>
         <a href="https://mail.google.com/mail/?view=cm&fs=1&to=sinodca1@gmail.com" class="social-pill" target="_blank" rel="noopener" title="Email" aria-label="Email"><i class="fas fa-envelope"></i></a>
@@ -193,20 +198,21 @@
 
     <div class="projects-grid">
 
-      <!-- GAN Observatory -->
+      <!-- Nodechain Lab -->
       <div class="project-card reveal" data-dir="left" data-delay="0">
-        <h3>GAN Observatory</h3>
-        <p class="proj-desc">A real-time, in-browser studio for training and analyzing GANs.</p>
+        <h3>Nodechain Lab</h3>
+        <p class="proj-desc">A real-time blockchain network built from scratch in Node.js, with self-mining peers and a live dashboard.</p>
         <div class="proj-chips" data-stagger>
-          <span>Python</span><span>FastAPI</span><span>WebSockets</span><span>NumPy</span><span>Docker</span>
+          <span>Node.js</span><span>Express</span><span>socket.io</span><span>React</span><span>Docker</span>
         </div>
         <ul class="proj-bullets">
-          <li>Watch a network learn a distribution live and steer training mid-run while a mode-collapse alarm watches.</li>
-          <li>Save and serve trained models over a REST API; race two GANs in an A/B derby with a time-travel scrubber.</li>
-          <li>Containerized with Docker and backed by 42 tests and continuous integration.</li>
+          <li>Proof-of-work mining with retargeting difficulty, secp256k1-signed transactions, a fee-prioritized mempool, and Merkle-root block integrity.</li>
+          <li>Real-time peer-to-peer gossip over WebSockets with flood relay, automatic peer discovery, and cumulative-work consensus that resyncs forks.</li>
+          <li>Self-driving miner that grinds proof-of-work in a worker thread, cancelling stale work the moment a better block arrives.</li>
+          <li>Live React dashboard streaming blocks, mempool, peers, and balances over SSE, with client-side signing and a one-command three-node Docker demo.</li>
         </ul>
         <div class="project-links">
-          <a href="https://github.com/yabtesfu/gan-lab-tensorflow" target="_blank" rel="noopener" class="proj-btn"><i class="fab fa-github"></i> GitHub</a>
+          <a href="https://github.com/yabtesfu/nodechain-lab" target="_blank" rel="noopener" class="proj-btn"><i class="fab fa-github"></i> GitHub</a>
         </div>
       </div>
 
@@ -274,81 +280,47 @@
     <div class="about-wrap">
       <div class="about-lead reveal" data-dir="left">
         <p>I engineer across the <strong>full depth of the stack</strong> - from the models that make a
-          product intelligent down to the kernel-level code they ultimately run on. My work sits where
-          real-time ML infrastructure, backend systems, and product engineering meet: recommendation
-          engines behind live marketplaces, telemetry streaming over FastAPI and WebSockets, and
-          interfaces that feel effortless to use.</p>
-        <p>I learn systems from <strong>first principles</strong>. That instinct is why I've written a
-          bare-metal RISC-V operating system in Rust, a distributed database with Raft consensus and MVCC
-          in pure Python, and a GAN with hand-derived backpropagation in NumPy - not because the shortcut
-          didn't exist, but because knowing what happens underneath sharpens everything built on top.</p>
-        <p>Good software isn't code that merely runs. It solves a real problem, fails gracefully, and
-          <strong>leaves room for what comes next</strong>.</p>
+          product intelligent down to the kernel-level code they run on - building recommendation engines
+          for live marketplaces, telemetry streaming over FastAPI and WebSockets, and interfaces that feel
+          effortless to use. I learn systems from <strong>first principles</strong>, which is why I've
+          written a bare-metal RISC-V operating system in Rust, a distributed database with Raft consensus
+          and MVCC in pure Python, and a peer-to-peer blockchain network in Node.js: knowing what happens
+          underneath sharpens everything built on top. Good software isn't code that merely runs - it
+          solves a real problem, fails gracefully, and <strong>leaves room for what comes next</strong>.</p>
       </div>
 
-      <div class="about-stack reveal" data-dir="right" data-delay="120">
-        <h3>Tech Stack</h3>
-        <div class="stack-groups">
-          <div class="stack-group">
-            <span class="stack-cat">Languages</span>
-            <div class="tags" data-stagger>
-              <span class="tag">Python</span>
-              <span class="tag">Rust</span>
-              <span class="tag">Java</span>
-              <span class="tag">TypeScript</span>
-              <span class="tag">JavaScript</span>
-              <span class="tag">SQL</span>
-              <span class="tag">RISC-V Assembly</span>
+      <div class="about-edu reveal" data-dir="right" data-delay="120" id="education">
+        <h3>Where I've Studied</h3>
+        <div class="timeline edu-timeline">
+
+          <div class="exp-item reveal">
+            <div class="exp-dot"></div>
+            <div class="exp-card">
+              <div class="exp-top">
+                <h3>B.S.E. Software Engineering</h3>
+                <span class="exp-period">Sep 2014 - Jul 2019</span>
+              </div>
+              <p class="exp-org"><i class="fas fa-graduation-cap"></i> Addis Ababa University <span class="exp-loc">· Addis Ababa · GPA 3.85</span></p>
+              <ul class="exp-bullets">
+                <li>Foundation across data structures and algorithms, operating systems, computer networks, database systems, and software architecture - applied end-to-end in team projects.</li>
+              </ul>
             </div>
           </div>
-          <div class="stack-group">
-            <span class="stack-cat">AI &amp; ML</span>
-            <div class="tags" data-stagger>
-              <span class="tag">TensorFlow/Keras</span>
-              <span class="tag">NumPy</span>
-              <span class="tag">GANs</span>
-              <span class="tag">scikit-learn</span>
-              <span class="tag">Model Evaluation</span>
-              <span class="tag">LLM Prompt Design</span>
+
+          <div class="exp-item reveal" data-delay="90">
+            <div class="exp-dot"></div>
+            <div class="exp-card">
+              <div class="exp-top">
+                <h3>Data Structures &amp; Algorithms Program</h3>
+                <span class="exp-period">Apr 2019 - Sep 2020</span>
+              </div>
+              <p class="exp-org"><i class="fas fa-graduation-cap"></i> A2SV <span class="exp-loc">· Africa to Silicon Valley</span></p>
+              <ul class="exp-bullets">
+                <li>Intensive training in competitive programming - trees, graphs, heaps, greedy, binary search, dynamic programming - moving from brute force to optimal under interview conditions.</li>
+              </ul>
             </div>
           </div>
-          <div class="stack-group">
-            <span class="stack-cat">Backend &amp; Systems</span>
-            <div class="tags" data-stagger>
-              <span class="tag">FastAPI</span>
-              <span class="tag">Node.js</span>
-              <span class="tag">asyncio</span>
-              <span class="tag">WebSockets</span>
-              <span class="tag">REST APIs</span>
-              <span class="tag">Redis RESP</span>
-              <span class="tag">TCP Networking</span>
-              <span class="tag">Raft Consensus</span>
-              <span class="tag">MVCC</span>
-              <span class="tag">B+ Trees</span>
-              <span class="tag">Virtual Memory</span>
-              <span class="tag">QEMU</span>
-            </div>
-          </div>
-          <div class="stack-group">
-            <span class="stack-cat">Frontend</span>
-            <div class="tags" data-stagger>
-              <span class="tag">React</span>
-              <span class="tag">Next.js</span>
-              <span class="tag">Tailwind CSS</span>
-              <span class="tag">Web Workers</span>
-            </div>
-          </div>
-          <div class="stack-group">
-            <span class="stack-cat">Data &amp; Infra</span>
-            <div class="tags" data-stagger>
-              <span class="tag">SQLite</span>
-              <span class="tag">Firebase/Firestore</span>
-              <span class="tag">Prometheus</span>
-              <span class="tag">Docker</span>
-              <span class="tag">GitHub Actions</span>
-              <span class="tag">CI/CD</span>
-            </div>
-          </div>
+
         </div>
       </div>
     </div>
@@ -367,116 +339,78 @@
         <div class="exp-dot"></div>
         <div class="exp-card">
           <div class="exp-top">
-            <h3>Full Stack Developer · Internal Tooling</h3>
-            <span class="exp-period">2023 - 2026</span>
+            <h3>LLM Trainer · AI Data Annotation &amp; Model Evaluation</h3>
+            <span class="exp-period">Feb 2026 - Jul 2026</span>
           </div>
-          <p class="exp-org"><i class="fas fa-building"></i> Esklate</p>
+          <p class="exp-org"><i class="fas fa-building"></i> Turing</p>
+          <p class="exp-meta">Remote · Full-time</p>
           <ul class="exp-bullets">
-            <li>Built an automation platform with Slack integration that streamlined Google Sheets workflows, adopted by over 200 employees across four time zones and improving operational efficiency.</li>
-            <li>Designed a timezone-aware notification system using Redis and Celery job queues, reducing missed deadlines by 30% through personalized alerts.</li>
-            <li>Developed a web-based dashboard for real-time project tracking and performance insights, enabling leadership to make data-driven decisions.</li>
-            <li>Implemented a Kubernetes-based orchestration system that improved scalability and reduced deployment times by 60%.</li>
-            <li>Engineered highly available Go microservices for container monitoring and management, helping maintain 99.9% system uptime.</li>
+            <li>Produced frame-level video annotations capturing actions, context, and temporal relationships to train LLM and multimodal models.</li>
+            <li>Curated training examples with strict temporal accuracy, improving how models learn sequential events and real-world behavior.</li>
+            <li>Evaluated model performance through targeted prompt design and response validation, feeding inconsistencies back into the improvement cycle.</li>
           </ul>
           <div class="exp-tags" data-stagger>
-            <span>Go</span><span>Kubernetes</span><span>Redis</span><span>Celery</span><span>Slack API</span>
+            <span>LLM Training</span><span>Prompt Design</span><span>Model Evaluation</span><span>Multimodal Data</span>
           </div>
         </div>
       </div>
 
-      <div class="exp-item reveal" data-delay="100">
+      <div class="exp-item reveal" data-delay="90">
+        <div class="exp-dot"></div>
+        <div class="exp-card">
+          <div class="exp-top">
+            <h3>Back End Developer</h3>
+            <span class="exp-period">Mar 2023 - Feb 2026</span>
+          </div>
+          <p class="exp-org"><i class="fas fa-building"></i> Eskalate</p>
+          <p class="exp-meta">On-site · Full-time</p>
+          <ul class="exp-bullets">
+            <li>Led the migration from Flask and MongoDB to an asynchronous FastAPI + SQLAlchemy architecture, reducing API latency by 35%.</li>
+            <li>Engineered real-time ML infrastructure over FastAPI WebSockets, streaming live training telemetry to browsers at 20 FPS with experiment tracking and on-demand model endpoints.</li>
+            <li>Shipped the recommendation engine behind Bazar, an AI-powered marketplace, using TensorFlow and scikit-learn over an automated Python and Selenium data pipeline.</li>
+          </ul>
+          <div class="exp-tags" data-stagger>
+            <span>Python</span><span>FastAPI</span><span>SQLAlchemy</span><span>TensorFlow</span><span>WebSockets</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="exp-item reveal" data-delay="180">
         <div class="exp-dot"></div>
         <div class="exp-card">
           <div class="exp-top">
             <h3>React Frontend Developer</h3>
-            <span class="exp-period">2022 - 2023</span>
+            <span class="exp-period">Feb 2021 - Mar 2023</span>
           </div>
-          <p class="exp-org"><i class="fas fa-building"></i> Kuraz Tech Engineering PLC <span class="exp-loc">· Addis Ababa, Ethiopia</span></p>
+          <p class="exp-org"><i class="fas fa-building"></i> Kuraztech</p>
+          <p class="exp-meta">On-site · Full-time</p>
           <ul class="exp-bullets">
-            <li>Collaborated within a 30+ member frontend team to build responsive, high-performance interfaces, improving application load times by 40% through code optimization and lazy loading.</li>
-            <li>Contributed to the migration to Next.js with SSR/SSG, improving SEO performance and increasing user engagement by 25%.</li>
-            <li>Mentored junior developers through code reviews and pair programming, reducing onboarding time by 30%.</li>
-            <li>Translated UX wireframes into reusable React components, helping improve overall user satisfaction by 15%.</li>
+            <li>Built responsive web experiences with React and Next.js, cutting application load times by 40% through lazy loading and code splitting.</li>
+            <li>Drove the migration to Next.js SSR and SSG, strengthening SEO performance and lifting user engagement by 25%.</li>
+            <li>Developed reusable UI components within a 30+ member engineering team, supporting delivery quality through code reviews and pair programming.</li>
           </ul>
           <div class="exp-tags" data-stagger>
-            <span>React</span><span>Next.js</span><span>SSR/SSG</span><span>TypeScript</span>
+            <span>React</span><span>Next.js</span><span>SSR/SSG</span><span>TypeScript</span><span>Performance</span>
           </div>
         </div>
       </div>
 
-      <div class="exp-item reveal" data-delay="200">
+      <div class="exp-item reveal" data-delay="270">
         <div class="exp-dot"></div>
         <div class="exp-card">
           <div class="exp-top">
-            <h3>Backend Engineer · Afro-Chat</h3>
-            <span class="exp-period">2021 - 2023</span>
+            <h3>Full Stack Developer · Internal Tooling</h3>
+            <span class="exp-period">Apr 2020 - Feb 2021</span>
           </div>
-          <p class="exp-org"><i class="fas fa-building"></i> Esklate</p>
+          <p class="exp-org"><i class="fas fa-building"></i> Eskalate</p>
+          <p class="exp-meta">On-site · Part-time</p>
           <ul class="exp-bullets">
-            <li>Engineered backend and ML infrastructure across three major projects: Bazar, GAN Observatory, and RustV OS Lab.</li>
-            <li>Built the intelligence layer of Bazar, an AI-driven marketplace for homes and cars, delivering personalized listings through a TensorFlow and scikit-learn recommendation engine fed by an automated Python and Selenium data collection pipeline.</li>
-            <li>Developed real-time ML serving infrastructure for GAN Observatory, streaming live training telemetry to browsers at 20 fps over FastAPI WebSockets, with thread-safe mid-run controls, a SQLite experiment registry, and on-demand model serving endpoints.</li>
-            <li>Demonstrated deep systems expertise through RustV OS Lab, a bare-metal RISC-V kernel in Rust covering boot, virtual memory, preemptive scheduling, user-mode syscalls, and a hand-built DMA block driver with a persistent filesystem.</li>
-            <li>Directed the migration from Flask + MongoDB to an async FastAPI + SQLAlchemy architecture, applying Domain-Driven Design and Test-Driven Development, which reduced API latency by 35%.</li>
-            <li>Streamlined CI/CD workflows with GitHub Actions, Dockerized deployments, and automated testing, shortening release cycles by 20%.</li>
-            <li>Built Python-based automation tools that cut container build times by 40%, improving development efficiency.</li>
-            <li>Contributed to open-source Linux projects, improving developer documentation and system tooling.</li>
+            <li>Built a Slack-integrated automation platform used by 200+ employees across four time zones, connecting Google Sheets workflows through APIs and background services.</li>
+            <li>Designed a timezone-aware notification system on Redis and Celery job queues, reducing missed deadlines by 30%.</li>
+            <li>Developed highly available Go microservices on Kubernetes, holding 99.9% uptime while cutting deployment times by 60%.</li>
           </ul>
           <div class="exp-tags" data-stagger>
-            <span>Python</span><span>FastAPI</span><span>TensorFlow</span><span>WebSockets</span><span>Rust</span><span>Docker</span>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </section>
-
-  <!-- ===================== EDUCATION ===================== -->
-  <section class="pg-section education-section" id="education">
-    <div class="section-head reveal">
-      <p class="section-label">04 / EDUCATION</p>
-      <h2 class="section-title">Where I've <span>Studied</span></h2>
-    </div>
-
-    <div class="timeline">
-
-      <div class="exp-item reveal">
-        <div class="exp-dot"></div>
-        <div class="exp-card">
-          <div class="exp-top">
-            <h3>Software Engineering</h3>
-            <span class="exp-period">2014 - 2019</span>
-          </div>
-          <p class="exp-org"><i class="fas fa-graduation-cap"></i> Addis Ababa Institute of Technology <span class="exp-loc">· Addis Ababa, Ethiopia</span></p>
-          <p class="exp-desc">Relevant coursework spanning the full software engineering foundation:</p>
-          <div class="exp-tags" data-stagger>
-            <span>Data Structures &amp; Algorithms</span>
-            <span>Web &amp; Mobile Development</span>
-            <span>Machine Learning &amp; AI</span>
-            <span>Distributed Systems &amp; Cloud</span>
-            <span>Operating Systems &amp; Systems Programming</span>
-            <span>Computer Networking &amp; Security</span>
-            <span>Database Systems &amp; Data Modeling</span>
-            <span>Software Engineering &amp; Design Patterns</span>
-            <span>Parallel &amp; Concurrent Programming</span>
-            <span>Computer Architecture</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="exp-item reveal" data-delay="100">
-        <div class="exp-dot"></div>
-        <div class="exp-card">
-          <div class="exp-top">
-            <h3>Coding Academy</h3>
-            <span class="exp-period">2020 - 2021</span>
-          </div>
-          <p class="exp-org"><i class="fas fa-graduation-cap"></i> A2SV · Africa to Silicon Valley</p>
-          <ul class="exp-bullets">
-            <li>Completed a rigorous boot camp focused on data structures and algorithms, built to prepare participants for software engineering interviews at leading tech firms.</li>
-          </ul>
-          <div class="exp-tags" data-stagger>
-            <span>Data Structures</span><span>Algorithms</span><span>Competitive Programming</span><span>Interview Prep</span>
+            <span>Go</span><span>Kubernetes</span><span>Redis</span><span>Celery</span><span>Slack API</span>
           </div>
         </div>
       </div>
@@ -487,7 +421,7 @@
   <!-- ===================== CONTACT ===================== -->
   <section class="pg-section contact-section" id="contact">
     <div class="section-head reveal">
-      <p class="section-label">05 / CONTACT</p>
+      <p class="section-label">04 / CONTACT</p>
       <h2 class="section-title"><span>connect</span></h2>
     </div>
 
@@ -495,8 +429,9 @@
       <p class="contact-line">Open to collaborating on complex systems problems.</p>
 
       <div class="contact-icons">
+        <a href="https://github.com/yabtesfu" target="_blank" rel="noopener" aria-label="GitHub"><i class="fab fa-github"></i></a>
+        <a href="https://www.linkedin.com/in/sinoda-tesfay/" target="_blank" rel="noopener" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
         <a href="https://www.instagram.com/swiftiy.sinod/" target="_blank" rel="noopener" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-        <a href="https://www.linkedin.com/in/sinoda-tesfay-16b8983a6/" target="_blank" rel="noopener" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
         <a href="https://t.me/sznMoh" target="_blank" rel="noopener" aria-label="Telegram"><i class="fab fa-telegram"></i></a>
         <a href="https://mail.google.com/mail/?view=cm&fs=1&to=sinodca1@gmail.com" target="_blank" rel="noopener" aria-label="Email"><i class="fas fa-envelope"></i></a>
       </div>

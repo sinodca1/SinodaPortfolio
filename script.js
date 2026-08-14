@@ -10,22 +10,56 @@ const ROLE_TEXT = 'Full-Stack & Systems Engineer';
 const roleEl = document.getElementById('role-typing');
 const logoEl = document.getElementById('logo-sig');
 
-let roleTimer = null;
+const ROLE_SPEED = 68;        // ms per character
+let roleFrame = null;
 
-/* Type the role once, from empty, then stop. */
+/* Type the role once, from empty, then stop.
+   Driven off the frame clock rather than a chain of setTimeouts: a timeout
+   chain drifts under load and lands characters unevenly, which is what made
+   the line stutter. Here the character count is derived from elapsed time, so
+   the cadence stays even, and the DOM is only touched when the count actually
+   changes. The span is also held at the line's full width (see --role-len),
+   so characters appear in place instead of shunting the centred line sideways
+   on every keystroke. */
+/* Reserve exactly the finished line's width. Counting `ch` undershoots it -
+   letter-spacing is not part of a character cell - and the line wrapped, so
+   measure the real thing at the current font size instead. */
+function measureRoleWidth() {
+  if (!roleEl) return;
+  const prev = roleEl.textContent;
+  roleEl.style.width = 'auto';
+  roleEl.textContent = ROLE_TEXT;
+  const w = Math.ceil(roleEl.getBoundingClientRect().width) + 1;
+  roleEl.style.width = '';
+  roleEl.style.setProperty('--role-len', w + 'px');
+  roleEl.textContent = prev;
+}
+
+if (roleEl) {
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(measureRoleWidth);
+  window.addEventListener('resize', measureRoleWidth);
+}
+
 function typeRole() {
   if (!roleEl) return;
-  if (roleTimer) clearTimeout(roleTimer);
+  if (roleFrame) cancelAnimationFrame(roleFrame);
+
+  measureRoleWidth();
   roleEl.textContent = '';
-  let i = 0;
-  const step = () => {
-    roleEl.textContent = ROLE_TEXT.slice(0, i);
-    if (i <= ROLE_TEXT.length) {
-      i++;
-      roleTimer = setTimeout(step, 55);
+  if (REDUCED) { roleEl.textContent = ROLE_TEXT; return; }
+
+  const started = performance.now();
+  let shown = -1;
+
+  const step = (now) => {
+    const i = Math.min(ROLE_TEXT.length, Math.floor((now - started) / ROLE_SPEED));
+    if (i !== shown) {
+      shown = i;
+      roleEl.textContent = ROLE_TEXT.slice(0, i);
     }
+    roleFrame = i < ROLE_TEXT.length ? requestAnimationFrame(step) : null;
   };
-  step();
+  roleFrame = requestAnimationFrame(step);
 }
 
 /* Replay the signature write-on. The underline shares the same keyframe
@@ -134,144 +168,105 @@ window.addEventListener('scroll', () => {
 })();
 
 
-/* ---------- FULL NAME REVEAL (tap support on touch devices) ---------- */
+/* ---------- FULL NAME REVEAL ----------
+   The middle name unfolds by animating max-width. Guessing that width in `ch`
+   overshot the real word, so the easing spent its last stretch travelling past
+   text that had already finished moving - which is what read as a stutter.
+   Measuring the word and handing the exact px to CSS makes the curve land
+   right on it. Re-measured once the display webfont swaps in, and on resize. */
 const heroName = document.getElementById('hero-name');
 if (heroName) {
+  const midEl = heroName.querySelector('.nm-mid');
+
+  function measureMiddleName() {
+    if (!midEl) return;
+    const w = midEl.scrollWidth;           // full content width despite max-width: 0
+    if (w > 0) heroName.style.setProperty('--mid-w', w + 'px');
+  }
+
+  measureMiddleName();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(measureMiddleName);
+  window.addEventListener('resize', measureMiddleName);
+
+  // Tap support on touch devices, where there is no hover.
   heroName.addEventListener('click', () => heroName.classList.toggle('show-mid'));
 }
 
 
-/* ---------- THEME TOGGLE + LIVE FAVICON ---------- */
+/* ---------- THEME: light -> dark -> system ----------
+   The inline head script already resolved and painted the mode before first
+   paint; this mirrors it into the toggle and cycles it on click. */
 const themeToggle = document.getElementById('theme-toggle');
 const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-const faviconLink = document.querySelector('link[rel="icon"]');
+const THEME_KEY = 'folio-theme';
+const THEME_MODES = ['light', 'dark', 'system'];
+const systemDark = window.matchMedia('(prefers-color-scheme: dark)');
 
-/* The tile mark from favicon.svg is redrawn on a canvas so it can morph
-   between the dark and light palettes as the in-page toggle flips. */
-const faviconCanvas = document.createElement('canvas');
-faviconCanvas.width = faviconCanvas.height = 64;
-
-const FAV_BG_DARK   = [11, 11, 13],   FAV_BG_LIGHT   = [255, 255, 255];
-const FAV_TILE_DARK = [155, 224, 0],  FAV_TILE_LIGHT = [63, 122, 0];
-const FAV_DOT_DARK  = [47, 106, 0],   FAV_DOT_LIGHT  = [155, 224, 0];
-
-function favMix(a, b, t) {
-  const c = i => Math.round(a[i] + (b[i] - a[i]) * t);
-  return `rgb(${c(0)},${c(1)},${c(2)})`;
-}
-
-function favRoundRect(ctx, x, y, w, h, r) {
-  if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(x, y, w, h, r); return; }
-  ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.arcTo(x + w, y,     x + w, y + h, r);
-  ctx.arcTo(x + w, y + h, x,     y + h, r);
-  ctx.arcTo(x,     y + h, x,     y,     r);
-  ctx.arcTo(x,     y,     x + w, y,     r);
-  ctx.closePath();
-}
-
-/* t = 0 -> dark theme, t = 1 -> light theme */
-function drawFavicon(t) {
-  if (!faviconLink) return;
-  const ctx = faviconCanvas.getContext('2d');
-  const S = faviconCanvas.width;
-  ctx.clearRect(0, 0, S, S);
-  ctx.save();
-  ctx.scale(S / 512, S / 512);
-
-  // squircle background
-  ctx.fillStyle = favMix(FAV_BG_DARK, FAV_BG_LIGHT, t);
-  favRoundRect(ctx, 0, 0, 512, 512, 120);
-  ctx.fill();
-
-  // three rounded tiles
-  ctx.fillStyle = favMix(FAV_TILE_DARK, FAV_TILE_LIGHT, t);
-  [[92, 92], [270, 92], [92, 270]].forEach(([x, y]) => {
-    favRoundRect(ctx, x, y, 150, 150, 40);
-    ctx.fill();
-  });
-
-  // the fourth cell, as a dot
-  ctx.fillStyle = favMix(FAV_DOT_DARK, FAV_DOT_LIGHT, t);
-  ctx.beginPath();
-  ctx.arc(345, 345, 75, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.restore();
-  faviconLink.type = 'image/png';
-  faviconLink.href = faviconCanvas.toDataURL('image/png');
-}
-
-let faviconT = 0;
-let faviconAnim = null;
-function animateFavicon(target) {
-  if (faviconAnim) cancelAnimationFrame(faviconAnim);
-  const start = faviconT;
-  const t0 = performance.now();
-  const dur = 450;
-  function step(now) {
-    const p = Math.min((now - t0) / dur, 1);
-    const e = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2; // easeInOutQuad
-    faviconT = start + (target - start) * e;
-    drawFavicon(faviconT);
-    faviconAnim = p < 1 ? requestAnimationFrame(step) : null;
+function applyTheme(mode) {
+  const resolved = mode === 'system' ? (systemDark.matches ? 'dark' : 'light') : mode;
+  document.documentElement.dataset.theme = resolved;
+  document.documentElement.dataset.themeMode = mode;
+  if (themeToggle) {
+    themeToggle.dataset.mode = mode;
+    themeToggle.setAttribute('aria-label', 'Theme: ' + mode + ' (click to switch)');
+    themeToggle.setAttribute('title', 'Theme: ' + mode);
   }
-  faviconAnim = requestAnimationFrame(step);
+  if (themeColorMeta) {
+    themeColorMeta.setAttribute('content', resolved === 'dark' ? '#070907' : '#fafbf8');
+  }
 }
 
-function applyThemeChrome(isLight) {
-  if (themeColorMeta) themeColorMeta.setAttribute('content', isLight ? '#f6f6f4' : '#09090b');
-}
+let themeMode = document.documentElement.dataset.themeMode || 'system';
+if (THEME_MODES.indexOf(themeMode) === -1) themeMode = 'system';
+applyTheme(themeMode);
+
+// In system mode, follow the OS if it flips while the page is open.
+systemDark.addEventListener('change', () => {
+  if (themeMode === 'system') applyTheme('system');
+});
 
 if (themeToggle) {
-  // The inline head script already painted body.light-theme; mirror it here.
-  const isLightNow = document.body.classList.contains('light-theme');
-  if (isLightNow) themeToggle.classList.add('light');
-  applyThemeChrome(isLightNow);
-
-  // paint the initial favicon to match the starting theme (no animation)
-  faviconT = isLightNow ? 1 : 0;
-  drawFavicon(faviconT);
-
   themeToggle.addEventListener('click', () => {
-    document.body.classList.toggle('light-theme');
-    themeToggle.classList.toggle('light');
-    const isLight = document.body.classList.contains('light-theme');
-    localStorage.setItem('theme', isLight ? 'light' : 'dark');
-    applyThemeChrome(isLight);
-    animateFavicon(isLight ? 1 : 0); // smooth morph between palettes
+    themeMode = THEME_MODES[(THEME_MODES.indexOf(themeMode) + 1) % THEME_MODES.length];
+    try { localStorage.setItem(THEME_KEY, themeMode); } catch (e) { /* storage blocked */ }
+    applyTheme(themeMode);
   });
 }
 
-
-/* ---------- CURSOR-FOLLOWING GLOW DOT ---------- */
+/* ---------- CURSOR-TRAILING DOT ----------
+   Spring physics: hard acceleration toward the pointer, slightly
+   underdamped, so quick direction changes overshoot and snap back.
+   The dot stays hidden until the pointer has actually moved. */
 const cursorDot = document.querySelector('.cursor-dot');
-if (cursorDot && window.matchMedia('(hover: hover)').matches) {
-  let tx = window.innerWidth / 2, ty = window.innerHeight / 2;
-  let cx = tx, cy = ty;
+if (cursorDot && !REDUCED && !window.matchMedia('(pointer: coarse)').matches) {
+  const lag = parseFloat(
+    getComputedStyle(document.documentElement).getPropertyValue('--cursor-dot-lag')
+  ) || 0.18;
+  const stiffness = 320 * lag / 0.18;
+  const damping = 2 * Math.sqrt(stiffness) * 0.62;   // under critical -> overshoot on turns
 
-  window.addEventListener('mousemove', e => {
+  let tx = -100, ty = -100, x = -100, y = -100, vx = 0, vy = 0, seen = false, lastT = 0;
+
+  document.addEventListener('mousemove', e => {
     tx = e.clientX; ty = e.clientY;
-    cursorDot.style.opacity = '';
+    if (!seen) { seen = true; x = tx; y = ty; cursorDot.style.opacity = '1'; }
   }, { passive: true });
 
-  document.addEventListener('mouseleave', () => { cursorDot.style.opacity = '0'; });
-
-  const interactive = 'a, button, .project-card, .exp-card, .theme-switch, .social-pill, .tag, .hero-title';
-  document.addEventListener('mouseover', e => {
-    if (e.target.closest(interactive)) cursorDot.classList.add('hovering');
-  });
-  document.addEventListener('mouseout', e => {
-    if (e.target.closest(interactive)) cursorDot.classList.remove('hovering');
+  document.documentElement.addEventListener('mouseleave', () => {
+    seen = false;
+    cursorDot.style.opacity = '0';
   });
 
-  (function loopDot() {
-    cx += (tx - cx) * 0.45;   // high follow factor - the dot keeps up with the cursor
-    cy += (ty - cy) * 0.45;
-    cursorDot.style.transform = `translate3d(${cx}px, ${cy}px, 0) translate(-50%, -50%)`;
+  (function loopDot(t) {
     requestAnimationFrame(loopDot);
-  })();
+    const dt = Math.min((t - (lastT || t)) / 1000, 0.05);
+    lastT = t;
+    vx += (stiffness * (tx - x) - damping * vx) * dt;
+    vy += (stiffness * (ty - y) - damping * vy) * dt;
+    x += vx * dt; y += vy * dt;
+    const half = cursorDot.offsetWidth / 2;
+    cursorDot.style.transform = `translate(${(x - half).toFixed(2)}px, ${(y - half).toFixed(2)}px)`;
+  })(0);
 }
 
 
@@ -423,19 +418,14 @@ const timelineObs = new IntersectionObserver(entries => {
 document.querySelectorAll('.timeline').forEach(el => timelineObs.observe(el));
 
 
-/* ---------- SCROLL: HERO PARALLAX + GRID DEPTH DRIFT ---------- */
+/* ---------- SCROLL: HERO PARALLAX + NAV ELEVATION ---------- */
 const heroInner = document.getElementById('hero-inner');
 const headerEl  = document.getElementById('site-header');
-const dotGrid   = document.querySelector('.dot-grid');
 
 let scrollTicking = false;
 function onScrollFrame() {
   scrollTicking = false;
   const y = window.scrollY;
-
-  // The two dot layers drift at different rates, so the sparse near layer
-  // outruns the dense far one and the backdrop reads as having depth.
-  if (dotGrid && !REDUCED) dotGrid.style.setProperty('--dg', y.toFixed(1));
 
   if (heroInner && !REDUCED) {
     const vh = window.innerHeight || 1;
@@ -444,9 +434,8 @@ function onScrollFrame() {
     heroInner.style.setProperty('--hero-fade', Math.max(0, 1 - p * 1.25).toFixed(3));
   }
 
-  if (headerEl) {
-    headerEl.style.boxShadow = y > 20 ? '0 1px 30px rgba(0,0,0,0.3)' : 'none';
-  }
+  // The floating pill deepens its shadow once it lifts off the top of the page.
+  if (headerEl) headerEl.classList.toggle('scrolled', y > 20);
 }
 
 window.addEventListener('scroll', () => {
@@ -457,21 +446,100 @@ window.addEventListener('scroll', () => {
 onScrollFrame();
 
 
-/* ---------- EXPERIENCE CARD CURSOR-TILT ---------- */
+/* ---------- CARD PHYSICS ----------
+   A resting tilted card straightens the moment the pointer enters (CSS
+   handles that), then tracks the cursor in 3D: the edge under the pointer
+   recedes while the opposite edge pops. The boundary glow is CSS too. */
 (function () {
   const canHover = window.matchMedia('(hover: hover)').matches;
   if (!canHover || REDUCED) return;
 
-  document.querySelectorAll('.exp-card').forEach(card => {
+  const MAX = parseFloat(
+    getComputedStyle(document.documentElement).getPropertyValue('--card-tilt-max')
+  ) || 5;
+
+  document.querySelectorAll('.project-card, .exp-card, .contact-card').forEach(card => {
+    card.addEventListener('mouseenter', () => card.classList.add('tracking'));
+
     card.addEventListener('mousemove', e => {
       const r = card.getBoundingClientRect();
-      const px = (e.clientX - r.left) / r.width;   // 0 = left edge, 1 = right edge
-      const py = (e.clientY - r.top) / r.height;   // 0 = top,  1 = bottom
-      const rotY = (px - 0.5) * 9;                 // lean toward the cursor side
-      const rotX = (0.5 - py) * 5;
+      const px = (e.clientX - r.left) / r.width  - 0.5;   // -0.5 … 0.5
+      const py = (e.clientY - r.top)  / r.height - 0.5;
+      const rotX = ( py * MAX * 2).toFixed(2);
+      const rotY = (-px * MAX * 2).toFixed(2);
       card.style.transform =
-        `perspective(900px) rotateY(${rotY.toFixed(2)}deg) rotateX(${rotX.toFixed(2)}deg) scale(1.025)`;
+        `perspective(var(--card-perspective)) rotateX(${rotX}deg) rotateY(${rotY}deg) translateY(-2px)`;
     });
-    card.addEventListener('mouseleave', () => { card.style.transform = ''; });
+
+    card.addEventListener('mouseleave', () => {
+      card.classList.remove('tracking');
+      card.style.transform = '';   // settles back to its resting tilt
+    });
   });
+})();
+
+
+/* ---------- STARFIELD ----------
+   Grain-size stars scattered over the canvas light up one by one and fade,
+   like a night sky. Whisper-quiet in light, the signature ambience in dark.
+   Colors are read from --star / --star-glow so it follows the theme. */
+(function starfield() {
+  const canvas = document.getElementById('starfield');
+  if (!canvas || REDUCED) return;
+
+  const ctx = canvas.getContext('2d');
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  let stars = [], w = 0, h = 0, last = 0;
+
+  function seed() {
+    const count = Math.round((w * h) / 30000);   // present, not attention-grabbing
+    stars = Array.from({ length: count }, () => ({
+      x: Math.random() * w,
+      y: Math.random() * h,
+      r: 1 + Math.random() * 1.9,
+      t: Math.random() * Math.PI * 2,        // twinkle phase
+      v: 0.25 + Math.random() * 0.65,        // twinkle speed
+      drift: Math.random() * 0.02 - 0.01,
+    }));
+  }
+
+  function resize() {
+    w = window.innerWidth;
+    h = window.innerHeight;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    seed();
+  }
+
+  function frame(now) {
+    requestAnimationFrame(frame);
+    if (now - last < 40) return;             // ~25fps is plenty for twinkle
+    last = now;
+
+    const css = getComputedStyle(document.documentElement);
+    const color = css.getPropertyValue('--star').trim() || '#5da635';
+    const glow  = css.getPropertyValue('--star-glow').trim() || 'rgba(93,166,53,0.5)';
+
+    ctx.clearRect(0, 0, w, h);
+    for (const s of stars) {
+      s.t += 0.06 * s.v;
+      s.x += s.drift;
+      const a = Math.max(0, Math.sin(s.t));   // dark for half the cycle: appear, then fade
+      if (a < 0.02) continue;
+      ctx.globalAlpha = Math.pow(a, 1.3);     // ease the pop-in, but stay lit longer
+      ctx.shadowBlur = 8 + 10 * a;
+      ctx.shadowColor = glow;
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    ctx.shadowBlur = 0;
+  }
+
+  resize();
+  window.addEventListener('resize', resize);
+  requestAnimationFrame(frame);
 })();

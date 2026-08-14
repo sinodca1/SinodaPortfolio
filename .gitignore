@@ -8,3 +8,7 @@ Thumbs.db
 .idea/
 .vscode/
 CHAT_HISTORY.md
+
+# Claude Code local tooling (skills, settings, design-system source)
+.claude/
+CLAUDE.md
